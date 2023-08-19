@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="<?=h($skindir)?>index.css?<?=h($petit_lot)?>">
+<link rel="preload" as="style" href="<?=h($skindir)?>icomoon/style.css?<?=h($petit_lot)?>" onload="this.rel='stylesheet'">
+<link rel="preload" as="style" href="lib/luminous/luminous-basic.min.css" onload="this.rel='stylesheet'">
+<link rel="preload" as="script" href="lib/luminous/luminous.min.js">
+<link rel="preload" as="script" href="lib/<?=h(JQUERY)?>">
+<link rel="preload" as="script" href="<?=h($skindir)?>js/common.js?<?=h($petit_lot)?>">
+	<title><?=h($boardname)?></title> 
+</head>
+<body>
+
+<div class="container">
+	<h1 class="title"><a href="./"><?=h($boardname)?></a></h1>
+<nav class="menu_wrap">
+		
+<span>[<a href="./"><?php if($en):?>Return<?php else:?>掲示板に戻る<?php endif;?></a>]</span>
+</nav>
+
+<?php if($adminpost||$admindel):?>
+<ul>
+<?php if($adminpost):?>
+<li>
+<?php if($use_diary):?>
+	<?php if($en):?>You are logged in in diary mode.<?php else:?>日記モードでログイン中です。<?php endif;?>
+			
+<?php else:?>
+		<?php if($en):?>You are logged in in admin post mode.<?php else:?>管理者投稿モードでログイン中です。<?php endif;?>		
+<?php endif;?>
+
+</li>
+<?php endif;?>
+<?php if($admindel):?>
+<li>
+<?php if($en):?>You are logged in in edit mode.<?php else:?>編集モードでログイン中です。<?php endif;?>
+</li>
+<?php endif;?>
+</ul>
+
+<form action="./" method="post" class="admin">
+<input type="hidden" name="mode" value="logout_admin">
+<input type="hidden" name="postpage" value="<?=h($page)?>">
+<input type="hidden" name="resno" value="<?=h($resno)?>">
+<input type="hidden" name="catalog" value="<?=h($catalog)?>">
+<input type="hidden" name="search" value="<?=h($search)?>">
+<input type="hidden" name="radio" value="<?=h($radio)?>">
+<input type="hidden" name="imgsearch" value="<?=h($imgsearch)?>">
+<input type="hidden" name="q" value="<?=h($q)?>">
+<input type="submit" value="<?php if($en):?>Admin log out<?php else:?>管理者ログアウト<?php endif;?>">
+	</form>
+	<?php endif;?>
+
+	<?php if(!$adminpost || !$admindel):?>
+
+	<form action="./" method="post" class="admin" id="res_form" onsubmit="return res_form_submit(event)">
+	<div id="error_message"></div>
+	<?php if(!$admindel):?>
+		
+		<label><input type="radio" name="mode" value="admin_del" checked>
+		<?php if($en):?>[Admin edit mode]<?php else:?>[管理者編集モード]<?php endif;?></label>
+			<br>
+		<?php endif;?>
+		<?php if(!$adminpost):?>
+		
+		<label><input type="radio" name="mode" value="adminpost" 
+			<?php if(!$admindel):?>checked<?php endif;?>
+			>
+			<?php if($use_diary):?>
+				<?php if($en):?>[Diary mode]<?php else:?>[日記モード]<?php endif;?>
+			<?php else:?>
+				<?php if($en):?>[Admin post mode]<?php else:?>[管理者投稿モード]<?php endif;?>
+				<?php endif;?>
+			</label><br>
+			<?php endif;?>
+		
+		<span class="non"><input type="text" value="" autocomplete="username"></span>
+		<input type="password" name="adminpass">
+		<input type="hidden" name="postpage" value="<?=h($page)?>">
+		<input type="hidden" name="resno" value="<?=h($resno)?>">
+		<input type="hidden" name="catalog" value="<?=h($catalog)?>">
+		<input type="hidden" name="search" value="<?=h($search)?>">
+		<input type="hidden" name="radio" value="<?=h($radio)?>">
+		<input type="hidden" name="imgsearch" value="<?=h($imgsearch)?>">
+		<input type="hidden" name="q" value="<?=h($q)?>">
+		<input type="submit" value="<?php if($en):?>Admin login<?php else:?>管理者ログイン<?php endif;?>">
+	</form>
+	<?php endif;?>
+
+<hr>
+<?php if(isset($latest_var)&&$latest_var):?>
+<div class="left_wrap"><a href="https://github.com/satopian/Petit_Note/releases/latest" target="_blank" rel="noopener"><img src="https://img.shields.io/github/v/release/satopian/Petit_Note?label=Latest" alt="Latest release"></a></div>
+<?php endif;?>
+<div class="copy">
+<?php include __DIR__.'/parts/copyright.html';?>
+</div>
+</div>
+</div>
+<div id="bottom"></div>
+<div id="page_top"><a class="icon-angles-up-solid"></a></div>
+<script src="lib/<?=h(JQUERY)?>"></script>
+<script src="lib/luminous/luminous.min.js"></script>
+<script src="<?=h($skindir)?>js/common.js?<?=h($petit_lot)?>"></script>
+</body>
+</html>
+		

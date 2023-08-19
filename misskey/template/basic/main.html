@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="<?=h($skindir)?>index.css?<?=h($petit_lot)?>">
+<link rel="preload" as="style" href="<?=h($skindir)?>icomoon/style.css?<?=h($petit_lot)?>" onload="this.rel='stylesheet'">
+<link rel="preload" as="style" href="lib/luminous/luminous-basic.min.css" onload="this.rel='stylesheet'">
+<link rel="preload" as="script" href="lib/luminous/luminous.min.js">
+<link rel="preload" as="script" href="lib/<?=h(JQUERY)?>">
+<link rel="preload" as="script" href="<?=h($skindir)?>js/common.js?<?=h($petit_lot)?>">
+
+<style>
+	.Misskey_description{
+		line-height: 2;
+	}
+	img {
+	max-width: 100%;
+	height: auto;
+	}
+	input.paint_button {
+		padding: 1px 10px;
+	}
+</style>
+<title><?=h($boardname)?></title> 
+</head>
+<body>
+
+<div class="container" id="top">
+
+<h1 class="title"><a href="./"><?=h($boardname)?></a></h1>
+<!-- ナビゲーション -->
+<nav class="menu_wrap">
+	<?php if($display_link_back_to_home):?>
+		<span>[<a href="<?=h($home)?>">HOME</a>]</span>
+	<?php endif;?>
+<?php if($aikotoba):?>
+	<?php if($use_paint):?>
+		<span> [<a href="./?mode=paintcom"><?php if($en):?>Recover Images<?php else:?>未投稿画像<?php endif;?></a>]</span>
+	<?php endif;?>
+<?php endif;?>
+	<a href="#bottom">▽</a>
+</nav>
+
+<?php if($aikotoba && !$userdel && !$admindel && !$is_badhost):?>
+<!-- 掲示板の説明文 -->
+<?php if(!empty($descriptions)):?>
+<div class="description">
+<ul>
+<?php foreach($descriptions as $description):?>
+	<li><?=h($description)?></li>
+	<?php endforeach;?>
+</ul>
+</div>
+<?php endif;?>
+<div class="mainform">
+<!-- ペイントフォーム -->
+<form action="./" method="post" enctype="multipart/form-data" class="paint_form" id="paint_forme" onsubmit="return res_form_submit(event,'paint_forme')">
+	<div id="error_message_paintform"></div>
+
+	<?php if($adminpost):?>
+	<span>
+	<input type="file" name="pchup" size="35" accept="image/*,.pch,.chi,.psd" class="pchup_button">
+	</span>
+	<br>
+	<?php endif;?>
+<input type="hidden" name="mode" value="paint">
+<input type="submit" value="Paint" class="paint_button">
+
+<?php if($select_app):?>
+<span>Tool:
+<select name="app" class="select_applet">
+<!-- ペイントアプリ選択のプルダウンメニューをインクルード -->
+<?php include __DIR__.'/parts/select_apps.html'?>
+</select>
+</span>
+<?php else:?>
+<input type="hidden" name="app" value="<?=h($app_to_use)?>">
+<?php endif;?>
+
+<span class="canvas_size_wrap"> 
+Size:
+<select name="picw" title="幅" class="canvas_select">
+	<?php
+	//幅 300から、$pmax_w で設定した最大値まで。
+		for($i = 300; $i <=$pmax_w ; $i+=50){//50ずつ増える
+		if($picwc==$i){//デフォルトサイズ
+		echo'<option value="'.h($i).'" selected>'.h($i).'</option>';
+		}
+		else{
+		echo'<option value="'.h($i).'">'.h($i).'</option>';
+		}
+		}
+	?>
+	</select>
+	x
+	<select name="pich" title="高さ" class="canvas_select">
+	<?php
+	//高さ 300から、PMAX_H で設定した最大値まで。
+		for($i = 300; $i <=$pmax_h ; $i+=50){//50ずつ増える
+		if($pichc==$i){//デフォルトサイズ
+		echo'<option value="'.h($i).'" selected>'.h($i).'</option>';
+		}
+		else{
+		echo'<option value="'.h($i).'">'.h($i).'</option>';
+		}
+		}
+	?>
+	</select>
+</span>
+</form>
+</div>
+<?php endif;?>
+
+<hr>
+<h2 class="article_title">お絵かき掲示板のお絵かきアプリで絵を描いてMisskeyに投稿できます。</h2>
+<ul class="Misskey_description">
+<li>ペイントボタンを押すとお絵かき掲示板のお絵かきアプリが起動します。</li>
+<li>絵を描き終わったら送信ボタンを押します。</li>
+<li>Misskeyに投稿するためのコメント入力画面に切り替わります。</li>
+<li>コメント入力画面の投稿ボタンを押すと投稿するMisskeyサーバの選択画面が開きます。</li>
+<li>アプリの認証が成功したら画像とコメントを送信します。このアプリのURLとハッシュタグ｢#Misskey専用お絵かき掲示板｣をノートに含んだ形でMisskeyに投稿します。
+<li>お絵かきアプリは｢PaintBBS NEO｣｢Tegaki｣｢ChickenPaint｣｢Klecks｣選べる4種類。</li>	
+<li>Misskeyで｢閲覧注意｣に設定する必要がある画像は｢閲覧注意にする｣にチェックを入れてください。</li>	
+<li>このアプリからの投稿は投稿者が選択したMisskeyサーバにしか投稿されません。</li>	
+<li>投稿に失敗した時はエラーメッセージがでます。</li>	
+<li>このページに戻って｢未投稿画像｣のリンクを開くと投稿に失敗した画像が残っている筈ですので再度お試しください。</li>	
+</ul>
+<hr>
+
+	<div class="copy">
+	<div class="left_wrap">
+		[<a href="<?=h($home)?>">HOME</a> / <a href="./?mode=adminin"><?php if($en):?>Admin<?php else:?>管理<?php endif;?></a>]
+	</div>
+<div class="righit_wrap">
+<?php include __DIR__.'/parts/copyright.html';?>
+</div>
+</div>
+</div>
+<div id="bottom"></div>
+<div id="page_top"><a class="icon-angles-up-solid"></a></div>
+<script src="lib/<?=h(JQUERY)?>"></script>
+<script src="lib/luminous/luminous.min.js"></script>
+<script src="<?=h($skindir)?>js/common.js?<?=h($petit_lot)?>"></script>
+</body>
+</html>

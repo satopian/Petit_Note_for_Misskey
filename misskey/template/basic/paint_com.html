@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="<?=h($skindir)?>index.css?<?=h($petit_lot)?>">
+	<link rel="preload" as="style" href="<?=h($skindir)?>icomoon/style.css?<?=h($petit_lot)?>" onload="this.rel='stylesheet'">
+	<link rel="preload" as="style" href="lib/luminous/luminous-basic.min.css" onload="this.rel='stylesheet'">
+	<link rel="preload" as="script" href="lib/luminous/luminous.min.js">
+	<link rel="preload" as="script" href="lib/<?=h(JQUERY)?>">
+	<link rel="preload" as="script" href="<?=h($skindir)?>js/common.js?<?=h($petit_lot)?>">
+	<title>お絵かき掲示板で絵を描いてMisskeyに投稿 | Misskey専用お絵かき掲示板 | PaintBBS NEO</title> 
+	<style>form#res_form >div {
+    margin: 0 0 12px;
+	}
+	</style>
+
+
+</head>
+<body>
+	<div class="container">
+		<h1 class="title"><a href="./">お絵かき掲示板で絵を描いてMisskeyに投稿</a></h1>
+		<nav class="menu_wrap" >
+			<span>[<a href="./"><?php if($en):?>Return<?php else:?>掲示板にもどる<?php endif;?></a>]</span>
+			<a href="#bottom">▽</a>
+			</nav>
+							   <hr>
+			
+		<div>
+			<div class="error">
+				<?php if(!$tmps):?>
+				<?php if($en):?>The images was not found.<?php else:?>画像が見当たりません。<?php endif;?><br>
+				<a href="#" onClick="javascript:window.history.back(-1);return false;"><?php if($en):?>Back<?php else:?>もどる<?php endif;?></a>
+			</div>
+			<?php endif;?>
+<?php if($tmps):?>
+			<?php foreach($out as $i=>$val):?>
+			<?php foreach($val as $tempimg):?>
+<div class="posted_img_form">
+	<img src="<?=h($tempimg['src'])?>"
+	alt="<?=h($tempimg['srcname'])?>" width="<?=h($tempimg['w'])?>" height="<?=h($tempimg['h'])?>"></div>
+<?=h($tempimg['srcname'])?><br>
+<?=h($tempimg['date'])?>
+
+				<?php endforeach;?>
+				<?php endforeach;?>
+	</div>
+<?php if($aikotoba):?>
+<form action="./" method="POST" enctype="multipart/form-data" class="postform" id="res_form">
+<!-- <form action="./" method="POST" enctype="multipart/form-data" class="postform" id="res_form" onsubmit="return res_form_submit(event)"> -->
+<div id="error_message"></div>
+	
+<textarea name="cw" class="post_cw" id="cw" placeholder="<?php if($en):?>CW<?php else:?>CW 注釈<?php endif;?>"></textarea>
+<textarea name="com" class="post_com" placeholder="<?php if($en):?>Comment<?php else:?>コメント<?php endif;?>"></textarea>
+<!-- <input type="hidden" name="mode" value="resist"> -->
+<input type="hidden" name="mode" value="create_misskey_note_sessiondata">
+<input type="hidden" name="token" value="<?=h($token)?>">
+<input type="hidden" name="pictmp" value="<?=h($pictmp)?>">
+<div class="post_table_title"><?php if($en):?>Images<?php else:?>画像<?php endif;?>
+	<select name="picfile" class="post_select_image" onchange="select_pic();" id="select_picfile">
+	<?php foreach($out as $i=>$val):?>
+	<?php krsort($val);?>
+
+			<?php foreach($val as $tempimg):?>
+				<option value="<?=h($tempimg['slect_src_val'])?>"><?=h($tempimg['srcname'])?></option>
+				<?php endforeach;?>
+	
+				<?php endforeach;?>
+			</select>
+	<span id="paintcom_hide_animation">
+	</span>
+	<br>
+		</div>
+<div>
+	<span>
+	<input type="checkbox" name="hide_thumbnail" id="hide_thumbnail" value="on" checked="checked"><label for="hide_thumbnail"><?php if($en):?>Sensitive content<?php else:?>閲覧注意にする<?php endif;?></label>
+	</span>
+	<span>
+	<input type="checkbox" name="show_painttime" id="show_painttime" value="on" checked="checked"><label for="show_painttime"><?php if($en):?>Show Paint time<?php else:?>描画時間を表示<?php endif;?></label>
+	</span>
+	<span>
+	<input type="checkbox" name="show_tag" id="show_tag" value="on" checked="checked"><label for="show_tag"><?php if($en):?>Add tag "#Misskey専用お絵かき掲示板"<?php else:?>｢#Misskey専用お絵かき掲示板｣を含める<?php endif;?></label>
+	</span>
+	
+		<span>
+	<input type="checkbox" name="hide_content" id="hide_content" value="on" ><label for="hide_content"><?php if($en):?>Hide content<?php else:?>内容を隠す<?php endif;?></label>
+		</span>
+	<input type="hidden" name="to_misskey" id="to_misskey" value="on">	
+</div>
+<span class="icon-Simpleicons-Team-Simple-Misskey misskey_form_misskey_icon"></span> <input type="submit" value="<?php if($en):?>Post<?php else:?>投稿する<?php endif;?>">
+</form>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+
+document.getElementById('cw').style.display = "none";
+document.getElementById('hide_content').addEventListener('change', function() {
+	
+	if(document.getElementById('hide_content').checked){
+		document.getElementById('cw').style.display = "block";
+	}else{
+		document.getElementById('cw').style.display = "none";
+
+	}
+});
+});
+</script>
+
+<!-- <script>
+	function to_sns_submitform() {
+		// e.preventDefault(); // デフォルトのフォームの送信を防止
+		// フォームの内容を取得
+		const form = document.getElementById("res_form");
+		const formData = new FormData(form);
+
+		const to_misskey = formData.get("to_misskey") || ''; 
+		if (!to_misskey) {
+		// Misskeyへの投稿オプションが存在しない場合は処理を中止
+			return;
+		}
+		
+		formData.append('mode', 'post2sns');//SNS投稿モード
+
+		// Misskeyへの投稿フォームを動的に生成
+		const sns_form = document.createElement('form');
+		sns_form.method = 'post';
+		sns_form.action = './';
+		// sns_form.target = '_blank'; // フォームを新しいタブで開く
+
+		// formDataの内容をフォームに追加
+		for (const pair of formData.entries()) {
+			const input = document.createElement('input');
+			input.type = 'hidden';
+			input.name = pair[0];
+			input.value = pair[1];
+			sns_form.appendChild(input);
+		}
+
+			// 幅と高さが数値であることを確認
+			if (typeof width !== 'number' || typeof height !== 'number') {
+				width=350;//デフォルト値
+				height=490;//デフォルト値
+			}
+		
+			// 幅と高さが正の値であることを確認
+			if (width <= 0 || height <= 0) {
+				width=350;//デフォルト値
+				height=490;//デフォルト値
+			}
+		
+		var url = e.currentTarget.href;
+		var windowFeatures = "width="+width+",height="+height; // ウィンドウのサイズを指定
+		
+		if (snsWindow && !snsWindow.closed) {
+			snsWindow.focus(); // 既に開かれているウィンドウがあればフォーカスする
+			} else {
+			snsWindow = window.open(url, "_blank", windowFeatures); // 新しいウィンドウを開く
+			}
+	
+    // フォームを送信
+    document.body.appendChild(sns_form);
+    sns_form.submit();
+}
+</script> -->
+
+<?php else:?>
+<?php if($en):?>What's the secret word?:<?php else:?>この掲示板の合言葉はなんですか?:<?php endif;?> 
+<form action="./" method="post" class="aikotoba">
+	<input type="text" name="aikotoba" class="input_txt">
+	<input type="hidden" name="mode" value="aikotoba">
+	<input type="hidden" name="paintcom" value="true">
+	<input type="submit" value="<?php if($en):?>Answer<?php else:?>秘密の答え<?php endif;?>">
+	</form>
+<?php endif;?>
+
+			<?php endif; ?>
+
+<br>
+<?php if($tmps):?>
+[<a href="./"><?php if($en):?>Return<?php else:?>掲示板にもどる<?php endif;?></a>]
+<?php endif;?>
+</div>
+</div>
+<div id="bottom"></div>
+<div id="page_top"><a class="icon-angles-up-solid"></a></div>
+<script src="lib/<?=h(JQUERY)?>"></script>
+<script src="lib/luminous/luminous.min.js"></script>
+<script src="<?=h($skindir)?>js/common.js?<?=h($petit_lot)?>"></script>
+</body>
+</html>
