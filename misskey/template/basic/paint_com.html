@@ -10,7 +10,7 @@
 	<link rel="preload" as="script" href="lib/luminous/luminous.min.js">
 	<link rel="preload" as="script" href="lib/<?=h(JQUERY)?>">
 	<link rel="preload" as="script" href="<?=h($skindir)?>js/common.js?<?=h($petit_lot)?>">
-	<title>お絵かき掲示板で絵を描いてMisskeyに投稿 | Misskey専用お絵かき掲示板 | PaintBBS NEO</title> 
+	<title><?=h($boardname)?></title> 
 	<style>form#res_form >div {
     margin: 0 0 12px;
 	}
@@ -20,7 +20,7 @@
 </head>
 <body>
 	<div class="container">
-		<h1 class="title"><a href="./">お絵かき掲示板で絵を描いてMisskeyに投稿</a></h1>
+		<h1 class="title"><a href="./"><?=h($boardname)?></a></h1>
 		<nav class="menu_wrap" >
 			<span>[<a href="./"><?php if($en):?>Return<?php else:?>掲示板にもどる<?php endif;?></a>]</span>
 			<a href="#bottom">▽</a>
@@ -105,64 +105,6 @@ document.getElementById('hide_content').addEventListener('change', function() {
 });
 });
 </script>
-
-<!-- <script>
-	function to_sns_submitform() {
-		// e.preventDefault(); // デフォルトのフォームの送信を防止
-		// フォームの内容を取得
-		const form = document.getElementById("res_form");
-		const formData = new FormData(form);
-
-		const to_misskey = formData.get("to_misskey") || ''; 
-		if (!to_misskey) {
-		// Misskeyへの投稿オプションが存在しない場合は処理を中止
-			return;
-		}
-		
-		formData.append('mode', 'post2sns');//SNS投稿モード
-
-		// Misskeyへの投稿フォームを動的に生成
-		const sns_form = document.createElement('form');
-		sns_form.method = 'post';
-		sns_form.action = './';
-		// sns_form.target = '_blank'; // フォームを新しいタブで開く
-
-		// formDataの内容をフォームに追加
-		for (const pair of formData.entries()) {
-			const input = document.createElement('input');
-			input.type = 'hidden';
-			input.name = pair[0];
-			input.value = pair[1];
-			sns_form.appendChild(input);
-		}
-
-			// 幅と高さが数値であることを確認
-			if (typeof width !== 'number' || typeof height !== 'number') {
-				width=350;//デフォルト値
-				height=490;//デフォルト値
-			}
-		
-			// 幅と高さが正の値であることを確認
-			if (width <= 0 || height <= 0) {
-				width=350;//デフォルト値
-				height=490;//デフォルト値
-			}
-		
-		var url = e.currentTarget.href;
-		var windowFeatures = "width="+width+",height="+height; // ウィンドウのサイズを指定
-		
-		if (snsWindow && !snsWindow.closed) {
-			snsWindow.focus(); // 既に開かれているウィンドウがあればフォーカスする
-			} else {
-			snsWindow = window.open(url, "_blank", windowFeatures); // 新しいウィンドウを開く
-			}
-	
-    // フォームを送信
-    document.body.appendChild(sns_form);
-    sns_form.submit();
-}
-</script> -->
-
 <?php else:?>
 <?php if($en):?>What's the secret word?:<?php else:?>この掲示板の合言葉はなんですか?:<?php endif;?> 
 <form action="./" method="post" class="aikotoba">
