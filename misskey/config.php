@@ -13,7 +13,7 @@ $admin_pass = "kanripass";
 $second_pass = "yNhUFapFrTY4ETi";
 
 //この掲示板の名前
-$boardname = "お絵かき掲示板で絵を描いてMisskeyに投稿";
+$boardname = "Misskey専用お絵かき掲示板";
 
 //ホームページ(掲示板からの戻り先)
 $home = "https://example.com/"; //相対パス、絶対パス、URLどれでもOK 
@@ -22,10 +22,9 @@ $home = "https://example.com/"; //相対パス、絶対パス、URLどれでもO
 //最低500スレッド。
 $max_log = 5000;
 
-//メール通知のほか、シェアボタンなどで使用
+//MisskeyのAPIを使うために必要
 // 設置場所のurl `/`まで。
 $root_url = "http://example.com/misskey/";
-// $root_url = "https://paintbbs.sakura.ne.jp/misskey/";
 
 /*テンプレート切り替え*/
 //テンプレートのディレクトリ`/`まで 初期値 "basic/"
