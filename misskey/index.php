@@ -432,6 +432,7 @@ function defaultview(){
 		$picwc=h((string)filter_input(INPUT_COOKIE,'picwc'));
 		$pichc=h((string)filter_input(INPUT_COOKIE,'pichc'));
 	
+		$petit_ver="";
 
 		// HTML出力
 		$templete='main.html';
