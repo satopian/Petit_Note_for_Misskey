@@ -18,10 +18,6 @@ $boardname = "Misskey専用お絵かき掲示板";
 //ホームページ(掲示板からの戻り先)
 $home = "https://example.com/"; //相対パス、絶対パス、URLどれでもOK 
 
-//最大スレッド保存件数 この数値以上のスレッドは削除されます
-//最低500スレッド。
-$max_log = 5000;
-
 //MisskeyのAPIを使うために必要
 // 設置場所のurl `/`まで。
 $root_url = "http://example.com/misskey/";
@@ -78,23 +74,6 @@ $use_klecs= true;
 //する: true でスレッド立ては管理者のみになります。
 // する: true しない: false
 
-$use_diary = true;
-// $use_diary = false;
-
-//返信を管理者のみに限定する
-//する: true で管理者以外返信ができなくなります。
-//日記モードと併用すれば、すべての書き込みが管理者のみになります。
-
-$only_admin_can_reply = true;
-// $only_admin_can_reply = false;
-
-//年齢制限付きの掲示板として設定する
-//する: trueに設定すると確認ボタンを押すまで画像にぼかしが入ります。
-// する: true しない: false
-
-// $set_nsfw = true;
-$set_nsfw = false;
-
 // 閲覧注意を設定する
 //する: trueに設定すると閲覧注意の設定ができるようになります。閲覧注意画像にぼかしが入ります。
 // する: true しない: false
@@ -107,19 +86,9 @@ $mark_sensitive_image = true;
 //する: trueに設定すると編集しても投稿日時が変わりません。 通常は しない: false 。
 // する: true しない: false
 
-// $do_not_change_posts_time = true;
-$do_not_change_posts_time = false;
-
-//レスがついてもスレッドがあがらないようにする
-//する: trueに設定するとレスがついてもスレッドがあがりません。(全てsage)。
-//初期値 false
-
-
 //管理者ページに最新のリリースのバージョンとリンクを表示する
 // する: true しない: false
 
-$latest_var = true;
-// $latest_var = false;
 
 /*画像関連*/
 

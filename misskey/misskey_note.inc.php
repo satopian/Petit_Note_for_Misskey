@@ -7,7 +7,7 @@ class misskey_note{
 
 	//Misskeyに投稿するSESSIONデータを作成
 	public static function create_misskey_note_sessiondata(){
-		global $en,$usercode,$root_url,$mark_sensitive_image,$skindir,$boardname,$petit_lot;
+		global $en,$usercode,$root_url,$skindir,$boardname,$petit_lot;
 	
 			$userip =t(get_uip());
 

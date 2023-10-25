@@ -48,10 +48,7 @@ if(!isset($admin_pass)||!$admin_pass){
 }
 $max_com= isset($max_com) ? $max_com : 1000;
 $deny_all_posts= isset($deny_all_posts) ? $deny_all_posts : (isset($denny_all_posts) ? $denny_all_posts : false);
-$latest_var=isset($latest_var) ? $latest_var : true;
 $badhost=isset($badhost) ? $badhost :[]; 
-$mark_sensitive_image = isset($mark_sensitive_image) ? $mark_sensitive_image : false; 
-$only_admin_can_reply = isset($only_admin_can_reply) ? $only_admin_can_reply : false;
 $aikotoba_required_to_view=isset($aikotoba_required_to_view) ? $aikotoba_required_to_view : false;
 $keep_aikotoba_login_status=isset($keep_aikotoba_login_status) ? $keep_aikotoba_login_status : false;
 $use_paintbbs_neo=isset($use_paintbbs_neo) ? $use_paintbbs_neo : true;
