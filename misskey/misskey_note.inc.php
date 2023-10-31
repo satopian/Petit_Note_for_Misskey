@@ -30,7 +30,7 @@ class misskey_note{
 				$picfile=basename($picfile);
 				$picfile=pathinfo($picfile, PATHINFO_FILENAME );//拡張子除去
 				//選択された絵が投稿者の絵か再チェック
-				if (!$picfile || !is_file(TEMP_DIR.$picfile.".dat") || !is_file($tempfile)) {
+				if (!$picfile || !is_file(TEMP_DIR.$picfile.".dat") || !is_file($tempfile)||!get_image_type($tempfile)) {
 					return error($en? 'Posting failed.':'投稿に失敗しました。');
 				}
 				//ユーザーデータから情報を取り出す
@@ -44,6 +44,8 @@ class misskey_note{
 				if($starttime && is_numeric($starttime) && $postedtime && is_numeric($postedtime)){
 					$painttime=(int)$postedtime-(int)$starttime;
 				}
+				
+
 				$pictmp2=true;//お絵かきでエラーがなかった時にtrue;
 				
 			}

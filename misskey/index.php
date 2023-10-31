@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2023
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20230818';
+$petit_lot='lot.20231031';
 $lang = ($http_langs = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
@@ -16,7 +16,7 @@ if(!is_file(__DIR__.'/functions.php')){
 	return die(__DIR__.'/functions.php'.($en ? ' does not exist.':'がありません。'));
 }
 require_once(__DIR__.'/functions.php');
-if(!isset($functions_ver)||$functions_ver<20230717){
+if(!isset($functions_ver)||$functions_ver<20231031){
 	return die($en?'Please update functions.php to the latest version.':'functions.phpを最新版に更新してください。');
 }
 check_file(__DIR__.'/misskey_note.inc.php');
@@ -56,6 +56,11 @@ $use_chickenpaint=isset($use_chickenpaint) ? $use_chickenpaint : true;
 $use_klecs=isset($use_klecs) ? $use_klecs : true;
 $use_tegaki=isset($use_tegaki) ? $use_tegaki : true;
 $display_link_back_to_home = isset($display_link_back_to_home) ? $display_link_back_to_home : true;
+$pmin_w = isset($pmin_w) ? $pmin_w : 300;//幅
+$pmin_h = isset($pmin_h) ? $pmin_h : 300;//高さ
+$pdef_w = isset($pdef_w) ? $pdef_w : 300;//幅
+$pdef_h = isset($pdef_h) ? $pdef_h : 300;//高さ
+$step_of_canvas_size = isset($step_of_canvas_size) ? $step_of_canvas_size : 50;
 $mode = (string)filter_input(INPUT_POST,'mode');
 $mode = $mode ? $mode :(string)filter_input(INPUT_GET,'mode');
 $usercode = t((string)filter_input(INPUT_COOKIE, 'usercode'));//user-codeを取得
@@ -106,7 +111,7 @@ switch($mode){
 //お絵かき画面
 function paint(){
 
-	global $boardname,$skindir,$pmax_w,$pmax_h,$en;
+	global $boardname,$skindir,$pmax_w,$pmax_h,$pmin_w,$pmin_h,$en;
 	global $usercode,$petit_lot;
 
 	check_same_origin();
@@ -121,10 +126,10 @@ function paint(){
 	if(!$usercode){
 		error($en? 'User code does not exist.' :'ユーザーコードがありません。');
 	}
-	if($picw < 300) $picw = 300;
-	if($pich < 300) $pich = 300;
-	if($picw > $pmax_w) $picw = $pmax_w;
-	if($pich > $pmax_h) $pich = $pmax_h;
+	$picw = ($picw < $pmin_w) ? $pmin_w : $picw;//最低の幅チェック
+	$pich = ($pich < $pmin_h) ? $pmin_h : $pich;//最低の高さチェック
+	$picw = ($picw > $pmax_w) ? $pmax_w : $picw;//最大の幅チェック
+	$pich = ($pich > $pmax_h) ? $pmax_h : $pich;//最大の高さチェック
 
 	setcookie("appc", $app , time()+(60*60*24*30),"","",false,true);//アプレット選択
 	setcookie("picwc", $picw , time()+(60*60*24*30),"","",false,true);//幅
@@ -166,29 +171,37 @@ function paint(){
 			}
 			$pchup = TEMP_DIR.'pchup-'.$time.'-tmp.'.$pchext;//アップロードされるファイル名
 
-			if(move_uploaded_file($pchtmp, $pchup)){//アップロード成功なら続行
-
-				$pchup=TEMP_DIR.basename($pchup);//ファイルを開くディレクトリを固定
-				if(!in_array(mime_content_type($pchup),["application/octet-stream","image/vnd.adobe.photoshop"])){
-					safe_unlink($pchup);
-					return error($en? 'This file is an unsupported format.':'対応していないファイル形式です。');
-				}
-				if(($pchext==="pch")&&is_neo($pchup)){
+			$move_uploaded = move_uploaded_file($pchtmp, $pchup);
+			if(!$move_uploaded){//アップロードは成功した?
+				safe_unlink($pchtmp);
+				return error($en?'This operation has failed.':'失敗しました。');
+			
+			}
+			$basename_pchup=basename($pchup);
+			$pchup=TEMP_DIR.$basename_pchup;//ファイルを開くディレクトリを固定
+			$mime_type = mime_content_type($pchup);
+			if(($pchext==="pch") && ($mime_type === "application/octet-stream") && is_neo($pchup)){
 					$app='neo';
-						if($get_pch_size=get_pch_size($pchup)){
+						if($get_pch_size = get_pch_size($pchup)){
 							list($picw,$pich)=$get_pch_size;//pchの幅と高さを取得
 						}
 					$pchfile = $pchup;
-				} elseif($pchext==="chi"){
+				} elseif(($pchext==="chi") && ($mime_type === "application/octet-stream")){
 					$app='chi';
 					$img_chi = $pchup;
-				} elseif($pchext==="psd"){
+				} elseif(($pchext==="psd") && ($mime_type === "image/vnd.adobe.photoshop")){
 					$app='klecks';
-					$img_klecks = $pchup;
+				$img_klecks = $pchup;
+				} elseif(in_array($pchext, ['gif','jpg','jpeg','png','webp']) && in_array($mime_type, ['image/gif', 'image/jpeg', 'image/png','image/webp'])){
+					$file_name=pathinfo($pchup,PATHINFO_FILENAME);
+					$max_px=isset($max_px) ? $max_px : 1024;
+					thumb(TEMP_DIR,$basename_pchup,$time,$max_px,$max_px,['toolarge'=>1]);
+					list($picw,$pich) = getimagesize($pchup);
+					$imgfile = $pchup;
+					$anime = false;
 				}else{
 					safe_unlink($pchup);
 					return error($en? 'This file is an unsupported format.':'対応していないファイル形式です。');
-				}
 			}
 		}
 	}
@@ -255,6 +268,8 @@ function paint(){
 
 	$parameter_day = date("Ymd");//JavaScriptのキャッシュ制御
 
+	$admin_pass= null;
+
 	switch($app){
 		case 'chi'://ChickenPaint
 		
@@ -280,7 +295,8 @@ function paint(){
 			$tool='neo';
 			$appw = $picw + 150;//NEOの幅
 			$apph = $pich + 172;//NEOの高さ
-			if($apph < 560){$apph = 560;}//最低高
+			$appw = ($appw < 450) ? 450 : $appw;//最低幅
+			$apph = ($apph < 560) ? 560 : $apph;//最低高
 			//動的パレット
 			$palettetxt = $en? 'palette_en.txt' : 'palette.txt';
 			check_file(__DIR__.'/'.$palettetxt);  
@@ -301,6 +317,7 @@ function paint(){
 			$palettes=$initial_palette.implode('',$arr_pal);
 			$palsize = count($arr_dynp) + 1;
 
+			$admin_pass= null;
 			// HTML出力
 			$templete='paint_neo.html';
 			return include __DIR__.'/'.$skindir.$templete;
@@ -315,7 +332,7 @@ function paintcom(){
 	global $use_aikotoba,$boardname,$home,$skindir,$en,$mark_sensitive_image;
 	global $usercode,$petit_lot; 
 
-	aikotoba_required_to_view();
+	aikotoba_required_to_view(true);
 	$token=get_csrf_token();
 	$userip = get_uip();
 	//テンポラリ画像リスト作成

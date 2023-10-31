@@ -1,5 +1,5 @@
 <?php
-$functions_ver=20230717;
+$functions_ver=20231031;
 //編集モードログアウト
 function logout(){
 	$resno=(int)filter_input(INPUT_GET,'resno',FILTER_VALIDATE_INT);
@@ -49,14 +49,14 @@ function aikotoba(){
 
 }
 //記事の表示に合言葉を必須にする
-function aikotoba_required_to_view(){
+function aikotoba_required_to_view($required_flag=false){
 
 	global $use_aikotoba,$aikotoba_required_to_view,$skindir,$en,$petit_lot;
 
 	$mode = (string)filter_input(INPUT_POST,'mode');
 	$mode = $mode ? $mode :(string)filter_input(INPUT_GET,'mode');
 
-	$required_flag=($use_aikotoba && in_array($mode,['paintcom','before_del','to_continue']));
+	$required_flag=($use_aikotoba && $required_flag);
 
 	if(!$aikotoba_required_to_view && !$required_flag){
 	return;
@@ -271,7 +271,7 @@ function switch_tool($tool){
 			$tool='PaintBBS';
 			break;
 		case 'shi-Painter':
-			$tool='shi-Painter';
+			$tool='Shi-Painter';
 			break;
 		case 'chi':
 			$tool='ChickenPaint';
@@ -284,12 +284,9 @@ function switch_tool($tool){
 			break;
 		case 'upload':
 			$tool=$en?'Upload':'アップロード';
-			$continue = false;
-			$upload_image = true;
 			break;
 		default:
 			$tool='';
-			$continue = false;
 			break;
 	}
 	return $tool;
@@ -439,8 +436,10 @@ function auto_link($str){
 	return $str;
 }
 
-//mimeから拡張子
-function getImgType ($img_type) {
+//mime typeを取得して拡張子を返す
+function get_image_type ($img_file) {
+
+	$img_type = mime_content_type($img_file);
 
 	switch ($img_type) {
 		case "image/gif" : return ".gif";
@@ -449,7 +448,6 @@ function getImgType ($img_type) {
 		case "image/webp" : return ".webp";
 		default : return '';
 	}
-	
 }
 //ファイルがあれば削除
 function safe_unlink ($path) {
@@ -513,6 +511,19 @@ function png2jpg ($src) {
 	}
 	return false;
 }
+//pngをjpegに変換してみてファイル容量が小さくなっていたら元のファイルを上書き
+function convert_andsave_if_smaller_png2jpg($upfile){
+	if ($im_jpg = png2jpg($upfile)) {//PNG→JPEG自動変換
+		clearstatcache();
+		$filesize=filesize($upfile);
+		if(filesize($im_jpg)<$filesize){//JPEGのほうが小さい時だけ
+			rename($im_jpg,$upfile);//JPEGで保存
+			chmod($upfile,0606);
+		} else{//PNGよりファイルサイズが大きくなる時は
+			unlink($im_jpg);//作成したJPEG画像を削除
+		}
+	}
+}
 
 function error($str){
 
@@ -525,6 +536,9 @@ function error($str){
 		return die(h("error\n{$str}"));
 	}
 	// $boardname = ($aikotoba_required_to_view && !aikotoba_valid()) ? '' : $boardname; 
+
+	$admin_pass= null;
+
 	$templete='error.html';
 	include __DIR__.'/template/basic/'.$templete;
 	exit;
@@ -578,8 +592,7 @@ function check_same_origin(){
 	if(!isset($_SERVER['HTTP_ORIGIN']) || !isset($_SERVER['HTTP_HOST'])){
 		return error($en?'Your browser is not supported. ':'お使いのブラウザはサポートされていません。');
 	}
-	$url_scheme=parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_SCHEME).'://';
-	if(str_replace($url_scheme,'',$_SERVER['HTTP_ORIGIN']) !== $_SERVER['HTTP_HOST']){
+	if(parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST) !== $_SERVER['HTTP_HOST']){
 		return error($en?"The post has been rejected.":'拒絶されました。');
 	}
 }
@@ -609,30 +622,14 @@ function check_AsyncRequest($upfile='') {
 // テンポラリ内のゴミ除去 
 function deltemp(){
 	$handle = opendir(TEMP_DIR);
-	session_sta();
-	//掲示板本体への投稿が完了ずみのワークファイルのタイムスタンプ
-	//Misskeyへの投稿を途中でやめた時にワークファイルが残るためファイル名を特定して10分で除去
-	$post_is_dones = isset($_SESSION['post_is_dones']) ? 
-	$_SESSION['post_is_dones'] : [];
-	$post_is_dones = is_array($post_is_dones) ? $post_is_dones : [];
-
-	rsort($post_is_dones);
-	foreach($post_is_dones as $i =>$post_is_done){
-		if($i>=10){//投稿完了ファイル情報は最大10件
-			unset($post_is_dones[$i]);//古いタイムスタンプから順に消える。
-		}
-	}
-	$_SESSION['post_is_dones'] = $post_is_dones;
-
 	while ($file = readdir($handle)) {
 		if(!is_dir($file)) {
 			$file=basename($file);
 			//pchアップロードペイントファイル削除
 			//仮差し換えアップロードファイル削除
-			$file_name=pathinfo($file, PATHINFO_FILENAME );//拡張子除去in_array($post_is_done)
 			$lapse = time() - filemtime(TEMP_DIR.$file);
-			if((strpos($file,'pchup-')===0)||((in_array($file_name,$post_is_dones)))) {
-				if($lapse > (600)){//10分
+			if(strpos($file,'pchup-')===0){
+				if($lapse > (300)){//5分
 					safe_unlink(TEMP_DIR.$file);
 				}
 			}else{
@@ -677,11 +674,11 @@ function Reject_if_NGword_exists_in_the_post(){
 	$url_len=strlen((string)$url);
 	$pwd_len=strlen((string)$pwd);
 
-	if($name_len && ($name_len > 30)) return error($en?'Name is too long':'名前が長すぎます。');
-	if($sub_len && ($sub_len > 80)) return error($en? 'Subject is too long.':'題名が長すぎます。');
-	if($url_len && ($url_len > 100)) return error($en? 'URL is too long.':'URLが長すぎます。');
-	if($com_len && ($com_len > $max_com)) return error($en? 'Comment is too long.':'本文が長すぎます。');
-	if($pwd_len && ($pwd_len > 100)) return error($en? 'Password is too long.':'パスワードが長すぎます。');
+	if($name_len > 30) return error($en?'Name is too long':'名前が長すぎます。');
+	if($sub_len > 80) return error($en? 'Subject is too long.':'題名が長すぎます。');
+	if($url_len > 100) return error($en? 'URL is too long.':'URLが長すぎます。');
+	if($com_len > $max_com) return error($en? 'Comment is too long.':'本文が長すぎます。');
+	if($pwd_len > 100) return error($en? 'Password is too long.':'パスワードが長すぎます。');
 
 	//チェックする項目から改行・スペース・タブを消す
 	$chk_name = $name_len ? preg_replace("/\s/u", "", $name ) : '';
@@ -720,7 +717,6 @@ function Reject_if_NGword_exists_in_the_post(){
 	if($bstr_A_find && $bstr_B_find){
 		return error($en?'There is an inappropriate string.':'不適切な表現があります。');
 	}
-
 }
 /**
  * NGワードチェック
@@ -775,17 +771,7 @@ function is_badhost(){
 
 //初期化
 function init(){
-	
-	check_dir(__DIR__."/src");
 	check_dir(__DIR__."/temp");
-	check_dir(__DIR__."/thumbnail");
-	check_dir(__DIR__."/log");
-	check_dir(__DIR__."/webp");
-	check_dir(__DIR__."/template/cache");
-	if(!is_file(LOG_DIR.'alllog.log')){
-	file_put_contents(LOG_DIR.'alllog.log','',FILE_APPEND|LOCK_EX);
-	chmod(LOG_DIR.'alllog.log',0600);	
-	}
 }
 
 //ディレクトリ作成
@@ -855,6 +841,10 @@ function image_reduction_display($w,$h,$max_w,$max_h){
  * @return string
  */
 function calcPtime ($psec) {
+
+	if(!is_numeric($psec)){
+		return false;
+	}
 
 	$D = floor($psec / 86400);
 	$H = floor($psec % 86400 / 3600);
