@@ -8,6 +8,7 @@ class misskey_note{
 	//Misskeyに投稿するSESSIONデータを作成
 	public static function create_misskey_note_sessiondata(){
 		global $en,$usercode,$root_url,$skindir,$boardname,$petit_lot;
+		check_csrf_token();
 	
 			$userip =t(get_uip());
 
@@ -18,7 +19,11 @@ class misskey_note{
 			$show_painttime = (bool)filter_input(INPUT_POST,'show_painttime',FILTER_VALIDATE_BOOLEAN);
 			$show_tag = (bool)filter_input(INPUT_POST,'show_tag',FILTER_VALIDATE_BOOLEAN);
 			$cw = t((string)filter_input(INPUT_POST,'cw'));
-			$cw = t((string)filter_input(INPUT_POST,'cw'));
+
+			if($hide_content && !$cw){
+				return error($en?"Content warning field is empty.":"注釈がありません。");
+			}
+			check_AsyncRequest();//Asyncリクエストの時は処理を中断
 
 			$cw = $hide_content ? $cw : null;
 
@@ -76,6 +81,7 @@ class misskey_note{
 				["tyazzkey.work","https://tyazzkey.work"],
 				["sushi.ski","https://sushi.ski"],
 				["misskey.delmulin.com","https://misskey.delmulin.com"],
+				["side.misskey.productions","https://side.misskey.productions"],
 			
 			];
 			$misskey_servers[]=[($en?"Direct input":"直接入力"),"direct"];//直接入力の箇所はそのまま。
@@ -83,6 +89,7 @@ class misskey_note{
 			$misskey_server_radio_cookie=(string)filter_input(INPUT_COOKIE,"misskey_server_radio_cookie");
 			$misskey_server_direct_input_cookie=(string)filter_input(INPUT_COOKIE,"misskey_server_direct_input_cookie");
 
+			$admin_pass= null;
 			// HTML出力
 			$templete='post2misskey.html';
 			return include __DIR__.'/'.$skindir.$templete;
@@ -108,7 +115,7 @@ class misskey_note{
 
 		session_sta();
 		// セッションIDとユニークIDを結合
-		$sns_api_session_id = session_id() . uniqid();
+		$sns_api_session_id = session_id() . uniqid() . mt_rand();
 		// SHA256ハッシュ化
 		$sns_api_session_id=hash('sha256', $sns_api_session_id);
 
@@ -123,7 +130,7 @@ class misskey_note{
 			$postUrl = "{$misskey_server_radio}/api/notes/create";
 			$postData = array(
 				'i' => $_SESSION['accessToken'],
-				'text' => '', // textフィールドを空にする
+				'text' => '', // 投稿を成功させないようにするためtextフィールドを空にする
 			);
 
 			$postCurl = curl_init();
@@ -136,14 +143,14 @@ class misskey_note{
 			$postStatusCode = curl_getinfo($postCurl, CURLINFO_HTTP_CODE); // HTTPステータスコードを取得
 			curl_close($postCurl);
 
-			// HTTPステータスコードが403番台でない場合は、ダミーの投稿が失敗したと判断
+			// HTTPステータスコードが403の時は、トークン不一致と判断しアプリを認証
 			if ($postStatusCode === 403) {
 				$Location = "{$misskey_server_radio}/miauth/{$sns_api_session_id}?name=Petit%20Note&callback={$encoded_root_url}connect_misskey_api.php&permission=write:notes,write:drive";
 			} else {
 				$Location = "{$root_url}connect_misskey_api.php?noauth=on&s_id={$sns_api_session_id}";
 			}
 
-		}else{
+		}else{//SESSIONにトークンがセットされていない時はアプリを認証
 			$Location = "{$misskey_server_radio}/miauth/{$sns_api_session_id}?name=Petit%20Note&callback={$encoded_root_url}connect_misskey_api.php&permission=write:notes,write:drive";
 
 		}

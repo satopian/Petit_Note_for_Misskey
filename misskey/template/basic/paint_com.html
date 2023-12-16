@@ -47,10 +47,8 @@
 				<?php endforeach;?>
 	</div>
 <?php if($aikotoba):?>
-<form action="./" method="POST" enctype="multipart/form-data" class="postform" id="res_form">
-<!-- <form action="./" method="POST" enctype="multipart/form-data" class="postform" id="res_form" onsubmit="return res_form_submit(event)"> -->
-<div id="error_message"></div>
-	
+<form action="./" method="POST" enctype="multipart/form-data" class="postform" id="image_rep" onsubmit="return res_form_submit(event,'image_rep')">
+	<div id="error_message_imgrep"></div>
 <textarea name="cw" class="post_cw" id="cw" placeholder="<?php if($en):?>CW<?php else:?>CW 注釈<?php endif;?>"></textarea>
 <textarea name="com" class="post_com" placeholder="<?php if($en):?>Comment<?php else:?>コメント<?php endif;?>"></textarea>
 <!-- <input type="hidden" name="mode" value="resist"> -->
