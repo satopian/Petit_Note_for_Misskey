@@ -1,5 +1,5 @@
 <?php
-$functions_ver=20231031;
+$functions_ver=20231219;
 //編集モードログアウト
 function logout(){
 	$resno=(int)filter_input(INPUT_GET,'resno',FILTER_VALIDATE_INT);
@@ -61,11 +61,24 @@ function aikotoba_required_to_view($required_flag=false){
 	if(!$aikotoba_required_to_view && !$required_flag){
 	return;
 	}
+
+	$page=(int)filter_input(INPUT_GET,'page',FILTER_VALIDATE_INT);
+	$resno=(int)filter_input(INPUT_GET,'resno',FILTER_VALIDATE_INT);
+
+	$admin_pass= null;
+
 	if(!aikotoba_valid()){
 		$templete='aikotoba.html';
 		include __DIR__.'/'.$skindir.$templete;
 		exit;//return include では処理が止まらない。 
 	}
+}
+
+//管理者パスワードを確認
+function is_adminpass($pwd){
+	global $admin_pass,$second_pass;
+	$pwd=(string)$pwd;
+	return ($admin_pass && $pwd && $second_pass !== $admin_pass && $pwd === $admin_pass);
 }
 
 function admin_in(){
@@ -90,6 +103,7 @@ function admin_in(){
 	if(!$use_aikotoba){
 		$aikotoba=true;
 	}
+	$admin_pass= null;
 	// HTML出力
 	$templete='admin_in.html';
 	return include __DIR__.'/'.$skindir.$templete;
@@ -105,12 +119,12 @@ function check_aikotoba(){
 }
 //管理者投稿モード
 function adminpost(){
-	global $admin_pass,$second_pass,$en;
+	global $second_pass,$en;
 
 	check_same_origin();
 	check_password_input_error_count();
 	session_sta();
-	if(!$admin_pass || !$second_pass || $admin_pass === $second_pass || $admin_pass!==(string)filter_input(INPUT_POST,'adminpass')){
+	if(!is_adminpass(filter_input(INPUT_POST,'adminpass'))){
 		if(isset($_SESSION['adminpost'])){
 			unset($_SESSION['adminpost']);
 		} 
@@ -126,13 +140,13 @@ function adminpost(){
 
 //管理者削除モード
 function admin_del(){
-	global $admin_pass,$second_pass,$en;
+	global $second_pass,$en;
 
 	check_same_origin();
 	check_password_input_error_count();
 
 	session_sta();
-	if(!$admin_pass || !$second_pass || $admin_pass === $second_pass || $admin_pass!==(string)filter_input(INPUT_POST,'adminpass')){
+	if(!is_adminpass(filter_input(INPUT_POST,'adminpass'))){
 		if(isset($_SESSION['admindel'])){
 			unset($_SESSION['admindel']);
 		} 
@@ -169,6 +183,10 @@ function admindel_valid(){
 	global $second_pass;
 	session_sta();
 	return isset($_SESSION['admindel'])&&($second_pass && $_SESSION['admindel']===$second_pass);
+}
+function userdel_valid(){
+	session_sta();
+	return isset($_SESSION['userdel'])&&($_SESSION['userdel']==='userdel_mode');
 }
 //合言葉の確認
 function aikotoba_valid(){
@@ -581,14 +599,17 @@ function session_sta(){
 }
 
 function check_same_origin(){
-	global $en;
+	global $en,$usercode;
 
-	$usercode = (string)filter_input(INPUT_COOKIE, 'usercode');//user-codeを取得
-
-	if(!$usercode){
+	session_sta();
+	$c_usercode = t((string)filter_input(INPUT_COOKIE, 'usercode'));//user-codeを取得
+	$session_usercode = isset($_SESSION['usercode']) ? t((string)$_SESSION['usercode']) : "";
+	if(!$c_usercode&&!$session_usercode){
 		return error($en?'Cookie check failed.':'Cookieが確認できません。');
-	} 
-
+	}
+	if(!$usercode || ($usercode!==$c_usercode)&&($usercode!==$session_usercode)){
+		return error($en?"User code mismatch.":"ユーザーコードが一致しません。");
+	}
 	if(!isset($_SERVER['HTTP_ORIGIN']) || !isset($_SERVER['HTTP_HOST'])){
 		return error($en?'Your browser is not supported. ':'お使いのブラウザはサポートされていません。');
 	}
@@ -605,7 +626,12 @@ function check_open_no($no){
 }
 
 function getId ($userip) {
-	return substr(hash('sha256', $userip, false),-8);
+	session_sta();
+	return 
+	(isset($_SESSION['userid'])&&$_SESSION['userid']) ?
+	$_SESSION['userid'] :
+	substr(hash('sha256', $userip, false),-8);
+
 }
 
 //Asyncリクエストの時は処理を中断
@@ -651,7 +677,7 @@ function deltemp(){
 
 // NGワードがあれば拒絶
 function Reject_if_NGword_exists_in_the_post(){
-	global $use_japanesefilter,$badstring,$badname,$badurl,$badstr_A,$badstr_B,$allow_comments_url,$admin_pass,$max_com,$en;
+	global $use_japanesefilter,$badstring,$badname,$badurl,$badstr_A,$badstr_B,$allow_comments_url,$max_com,$en;
 
 	$admin =(adminpost_valid()||admindel_valid());
 
@@ -661,7 +687,7 @@ function Reject_if_NGword_exists_in_the_post(){
 	$com = t((string)filter_input(INPUT_POST,'com'));
 	$pwd = t((string)filter_input(INPUT_POST,'pwd'));
 
-	if($admin || ($admin_pass && $pwd === $admin_pass)){
+	if($admin || is_adminpass($pwd)){
 		return;
 	}
 	if(is_badhost()){
@@ -945,7 +971,7 @@ function get_gd_ver(){
 // 古いスレッドへの投稿を許可するかどうか
 function check_elapsed_days ($postedtime) {
 	global $elapsed_days;
-	$postedtime=(strlen($postedtime)>15) ? substr($postedtime,0,-6) : substr($postedtime,0,-3);
+	$postedtime=microtime2time($postedtime);//マイクロ秒を秒に戻す
 	return $elapsed_days //古いスレッドのフォームを閉じる日数が設定されていたら
 		? ((time() - (int)$postedtime) <= ((int)$elapsed_days * 86400)) // 指定日数以内なら許可
 		: true; // フォームを閉じる日数が未設定なら許可
@@ -956,12 +982,19 @@ function time_left_to_close_the_thread ($postedtime) {
 	if(!$elapsed_days){
 		return false;
 	}
-	$postedtime=(strlen($postedtime)>15) ? substr($postedtime,0,-6) : substr($postedtime,0,-3);
+	$postedtime=microtime2time($postedtime);//マイクロ秒を秒に戻す
 	$timeleft=((int)$elapsed_days * 86400)-(time() - (int)$postedtime);
 	//残り時間が60日を切ったら表示
 	return ($timeleft<(60 * 86400)) ? 
 	calc_remaining_time_to_close_thread($timeleft) : false;
 }	
+// マイクロ秒を秒に戻す
+function microtime2time($microtime){
+	$microtime=(string)$microtime;
+	$time=(strlen($microtime)>15) ? substr($microtime,0,-6) : substr($microtime,0,-3);
+	return $time;
+}
+
 //POSTされた値をログファイルに格納する書式にフォーマット
 function create_formatted_text_from_post($name,$sub,$url,$com){
 	global $en,$name_input_required,$subject_input_required;
@@ -1056,7 +1089,7 @@ function app_to_use(){
 
 //パスワードを5回連続して間違えた時は拒絶
 function check_password_input_error_count(){
-	global $admin_pass,$second_pass,$en,$check_password_input_error_count;
+	global $second_pass,$en,$check_password_input_error_count;
 	if(!$check_password_input_error_count){
 		return;
 	}
@@ -1066,7 +1099,8 @@ function check_password_input_error_count(){
 	if(count($arr_err)>=5){
 		error($en?'Rejected.':'拒絶されました。');
 	}
-	if(!$admin_pass || !$second_pass || $admin_pass === $second_pass || $admin_pass!==(string)filter_input(INPUT_POST,'adminpass')){
+	if(!is_adminpass(filter_input(INPUT_POST,'adminpass'))){
+
 		$errlog=$userip."\n";
 		file_put_contents(__DIR__.'/template/errorlog/error.log',$errlog,FILE_APPEND);
 		chmod(__DIR__.'/template/errorlog/error.log',0600);

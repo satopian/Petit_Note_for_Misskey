@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2023
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20231031';
+$petit_lot='lot.20231219';
 $lang = ($http_langs = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
@@ -16,17 +16,17 @@ if(!is_file(__DIR__.'/functions.php')){
 	return die(__DIR__.'/functions.php'.($en ? ' does not exist.':'がありません。'));
 }
 require_once(__DIR__.'/functions.php');
-if(!isset($functions_ver)||$functions_ver<20231031){
+if(!isset($functions_ver)||$functions_ver<20231219){
 	return die($en?'Please update functions.php to the latest version.':'functions.phpを最新版に更新してください。');
 }
 check_file(__DIR__.'/misskey_note.inc.php');
 require_once(__DIR__.'/misskey_note.inc.php');
-if(!isset($misskey_note_ver)||$misskey_note_ver<20230809){
+if(!isset($misskey_note_ver)||$misskey_note_ver<20231216){
 	return die($en?'Please update misskey_note.inc.php to the latest version.':'misskey_note.inc.phpを最新版に更新してください。');
 }
 check_file(__DIR__.'/save.inc.php');
 require_once(__DIR__.'/save.inc.php');
-if(!isset($save_inc_ver)||$save_inc_ver<20230818){
+if(!isset($save_inc_ver)||$save_inc_ver<20231219){
 	return die($en?'Please update save.inc.php to the latest version.':'save.inc.phpを最新版に更新してください。');
 }
 // jQueryバージョン
@@ -63,15 +63,20 @@ $pdef_h = isset($pdef_h) ? $pdef_h : 300;//高さ
 $step_of_canvas_size = isset($step_of_canvas_size) ? $step_of_canvas_size : 50;
 $mode = (string)filter_input(INPUT_POST,'mode');
 $mode = $mode ? $mode :(string)filter_input(INPUT_GET,'mode');
-$usercode = t((string)filter_input(INPUT_COOKIE, 'usercode'));//user-codeを取得
 $userip = get_uip();
 //user-codeの発行
+$usercode = t((string)filter_input(INPUT_COOKIE, 'usercode'));//user-codeを取得
+session_sta();
+$session_usercode = isset($_SESSION['usercode']) ? t((string)$_SESSION['usercode']) : "";
+$usercode = $usercode ? $usercode : $session_usercode;
 if(!$usercode){//user-codeがなければ発行
 	$usercode = substr(crypt(md5($userip.uniqid()),'id'),-12);
 	//念の為にエスケープ文字があればアルファベットに変換
 	$usercode = strtr($usercode,"!\"#$%&'()+,/:;<=>?@[\\]^`/{|}~\t","ABCDEFGHIJKLMNOabcdefghijklmno");
 }
 setcookie("usercode", $usercode, time()+(86400*365),"","",false,true);//1年間
+$_SESSION['usercode']=$usercode;
+
 $x_frame_options_deny = isset($x_frame_options_deny) ? $x_frame_options_deny : true;
 if($x_frame_options_deny){
 	header('X-Frame-Options: DENY');
