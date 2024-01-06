@@ -186,6 +186,15 @@ class image_save{
 			$this->error_msg($this->en ? "Your picture upload failed!\nPlease try again!" : "投稿に失敗。\n時間を置いて再度投稿してみてください。");
 		}
 
+		if(function_exists("ImageCreateFromPNG")){//PNG画像が壊れていたらエラー
+			$im_in = @ImageCreateFromPNG($_FILES['picture']['tmp_name']);
+			if(!$im_in){
+				$this->error_msg($this->en ? "The image appears to be corrupted.\nPlease consider saving a screenshot to preserve your work." : "破損した画像が検出されました。\nスクリーンショットを撮り作品を保存する事を強くおすすめします。");
+			}else{
+				ImageDestroy($im_in);
+			}
+		}
+
 		// list($w,$h)=getimagesize($_FILES['picture']['tmp_name']);
 
 		// if($w > $this->pmax_w || $h > $this->pmax_h){//幅と高さ
