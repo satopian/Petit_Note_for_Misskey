@@ -22124,7 +22124,8 @@ function CPLayersPalette(controller) {
       widgetContainer = document.createElement("div"),
       layerContainer = document.createElement("div"),
       scrollContainer = layerContainer,
-      dropdownLayerMenu = createLayerDropdownMenu(),
+      //ドロップダウンメニュー関連項目のコメントアウト
+      // dropdownLayerMenu = createLayerDropdownMenu(),
       dropdownMousePos = {
         x: 0,
         y: 0
@@ -22506,7 +22507,7 @@ function CPLayersPalette(controller) {
         } else {
           var layerChanged = artwork.getActiveLayer() != layer;
           dropdownOnMask = (0, _jquery.default)(e.target).closest("." + CLASSNAME_LAYER_MASK_THUMBNAIL).length > 0 || layer instanceof _CPLayerGroup.default && layer.mask !== null && layerChanged;
-          if (e.button == BUTTON_PRIMARY && e.shiftKey && dropdownOnMask) {
+          if (e.button == BUTTON_PRIMARY && e.shiftKey && !e.ctrlKey && dropdownOnMask) {
             controller.actionPerformed({
               action: "CPSetMaskVisible",
               layer: layer,
@@ -22534,6 +22535,14 @@ function CPLayersPalette(controller) {
             if (selectMask && e.altKey) {
               controller.actionPerformed({
                 action: "CPToggleMaskView"
+              });
+            } else if (selectMask && !e.shiftKey && e.ctrlKey) {
+              controller.actionPerformed({
+                action: "CPApplyLayerMask"
+              });
+            } else if (selectMask && e.shiftKey && e.ctrlKey) {
+              controller.actionPerformed({
+                action: "CPRemoveLayerMask"
               });
             } else if (e.button == BUTTON_PRIMARY) {
               if (e.pointerType === "pen" || e.pointerType === "touch") {
@@ -22783,82 +22792,106 @@ function CPLayersPalette(controller) {
         (0, _jquery.default)(dropdownParent).collapse("hide").off("click");
       }
     }
-    function createLayerDropdownMenu() {
-      var menu = document.createElement("div"),
-        actions = [{
-          title: "Rename...",
-          action: "CPRenameLayer"
-        }, {
-          require: ["image-layer"],
-          title: "Delete layer",
-          action: "CPRemoveLayer"
-        }, {
-          require: ["layer-group"],
-          title: "Delete group",
-          action: "CPRemoveLayer"
-        }, {
-          require: ["image-layer", "no-clipping-mask"],
-          title: "Clip to the layer below",
-          action: "CPCreateClippingMask"
-        }, {
-          require: ["image-layer", "clipping-mask"],
-          title: "Unclip from the layer below",
-          action: "CPReleaseClippingMask"
-        }, {
-          require: ["no-mask"],
-          title: "Add mask",
-          action: "CPAddLayerMask"
-        }, {
-          require: ["mask"],
-          title: "Delete mask",
-          action: "CPRemoveLayerMask"
-        }, {
-          require: ["mask"],
-          title: "Apply mask",
-          action: "CPApplyLayerMask"
-        }, {
-          require: ["layer-group"],
-          title: "Merge group",
-          action: "CPGroupMerge"
-        }, {
-          require: ["mask-enabled"],
-          title: "Disable mask",
-          action: "CPSetMaskVisible",
-          actionData: {
-            visible: "false"
-          }
-        }, {
-          require: ["mask-disabled"],
-          title: "Enable mask",
-          action: "CPSetMaskVisible",
-          actionData: {
-            visible: "true"
-          }
-        }];
-      menu.className = "dropdown-menu";
-      for (var _i = 0, _actions = actions; _i < _actions.length; _i++) {
-        var action = _actions[_i];
-        var menuItemElem = document.createElement("a");
-        menuItemElem.className = "dropdown-item";
-        if (action.require) {
-          menuItemElem.className = menuItemElem.className + " " + action.require.map(function (requirement) {
-            return "chickenpaint-action-require-" + requirement;
-          }).join(" ");
-        }
-        menuItemElem.href = "#";
-        menuItemElem.innerHTML = (0, _lang._)(action.title);
-        menuItemElem.setAttribute("data-action", action.action);
-        if (action.actionData) {
-          for (var key in action.actionData) {
-            if (action.actionData.hasOwnProperty(key)) {
-              menuItemElem.setAttribute("data-action-" + key, action.actionData[key]);
-            }
-          }
-        }
-        menu.appendChild(menuItemElem);
-      }
-      return menu;
-    }
+
+    //ドロップダウンメニュー関連項目のコメントアウト
+
+    // function createLayerDropdownMenu() {
+
+    //     const
+    //         menu = document.createElement("div"),
+
+    //         actions = [
+    //             {
+    //                 title: "Rename...",
+    //                 action: "CPRenameLayer"
+    //             },
+    //             {
+    //                 require: ["image-layer"],
+    //                 title: "Delete layer",
+    //                 action: "CPRemoveLayer"
+    //             },
+    //             {
+    //                 require: ["layer-group"],
+    //                 title: "Delete group",
+    //                 action: "CPRemoveLayer"
+    //             },
+    //             {
+    //                 require: ["image-layer", "no-clipping-mask"],
+    //                 title: "Clip to the layer below",
+    //                 action: "CPCreateClippingMask"
+    //             },
+    //             {
+    //                 require: ["image-layer", "clipping-mask"],
+    //                 title: "Unclip from the layer below",
+    //                 action: "CPReleaseClippingMask"
+    //             },
+    //             {
+    //                 require: ["no-mask"],
+    //                 title: "Add mask",
+    //                 action: "CPAddLayerMask"
+    //             },
+    //             {
+    //                 require: ["mask"],
+    //                 title: "Delete mask",
+    //                 action: "CPRemoveLayerMask"
+    //             },
+    //             {
+    //                 require: ["mask"],
+    //                 title: "Apply mask",
+    //                 action: "CPApplyLayerMask"
+    //             },
+    //             {
+    //                 require: ["layer-group"],
+    //                 title: "Merge group",
+    //                 action: "CPGroupMerge"
+    //             },
+    //             {
+    //                 require: ["mask-enabled"],
+    //                 title: "Disable mask",
+    //                 action: "CPSetMaskVisible",
+    //                 actionData: {
+    //                     visible: "false"
+    //                 }
+    //             },
+    //             {
+    //                 require: ["mask-disabled"],
+    //                 title: "Enable mask",
+    //                 action: "CPSetMaskVisible",
+    //                 actionData: {
+    //                     visible: "true"
+    //                 }
+    //            }
+    //         ];
+
+    //     menu.className = "dropdown-menu";
+
+    //     for (let action of actions) {
+    //         let
+    //             menuItemElem = document.createElement("a");
+
+    //         menuItemElem.className = "dropdown-item";
+
+    //         if (action.require) {
+    //             menuItemElem.className = menuItemElem.className + " " + action.require.map(requirement => "chickenpaint-action-require-" + requirement).join(" ");
+    //         }
+    //         menuItemElem.href = "#";
+    //         menuItemElem.innerHTML = _(action.title);
+    //         menuItemElem.setAttribute("data-action", action.action);
+
+    //         if (action.actionData) {
+    //             for (let key in action.actionData) {
+    //                 if (action.actionData.hasOwnProperty(key)) {
+    //                     menuItemElem.setAttribute("data-action-" + key, action.actionData[key]);
+    //                 }
+    //             }
+    //         }
+
+    //         menu.appendChild(menuItemElem);
+    //     }
+
+    //     return menu;
+    // }
+
     function onDropdownActionClick(e) {
       var action = e.target.getAttribute("data-action");
       if (!action) {
@@ -22901,35 +22934,43 @@ function CPLayersPalette(controller) {
       return e.preventDefault();
     }, true /* Capture phase, prevent context menu on all children */);
 
-    dropdownLayerMenu.addEventListener("click", onDropdownActionClick);
+    //ドロップダウンメニュー関連項目のコメントアウト
+    // dropdownLayerMenu.addEventListener("click", onDropdownActionClick);
+
     layerContainer.className = "list-group";
     layerContainer.addEventListener("dblclick", onDoubleClick);
     layerContainer.addEventListener("pointerdown", onPointerDown);
     layerContainer.setAttribute("touch-action", "none");
-    for (var _i2 = 0, _arr = ["ontouchstart", "ontouchmove", "ontouchend", "ontouchcancel"]; _i2 < _arr.length; _i2++) {
-      var eventName = _arr[_i2];
+    for (var _i = 0, _arr = ["ontouchstart", "ontouchmove", "ontouchend", "ontouchcancel"]; _i < _arr.length; _i++) {
+      var eventName = _arr[_i];
       layerContainer.addEventListener(eventName, absorbTouch);
     }
     widgetContainer.appendChild(layerContainer);
-    widgetContainer.appendChild(dropdownLayerMenu);
-    (0, _jquery.default)(dropdownParent).on("show.bs.dropdown", function (e) {
-      var layerElem = (0, _jquery.default)(e.relatedTarget)[0],
-        $dropdownElem = (0, _jquery.default)(dropdownParent).find(".dropdown-menu"),
-        layerPos = layerElem.getBoundingClientRect(),
-        positionRootPos = dropdownParent.getBoundingClientRect();
+    //ドロップダウンメニュー関連項目のコメントアウト
+    // widgetContainer.appendChild(dropdownLayerMenu);
 
-      // Convert the offset to palette-relative coordinates (since that's its offset parent)
-      $dropdownElem.css({
-        left: dropdownMousePos.x - $dropdownElem.outerWidth(true) - positionRootPos.left + 1 + "px",
-        top: layerPos.top - $dropdownElem.outerHeight(true) / 2 - positionRootPos.top + "px"
-      });
+    // $(dropdownParent)
+    //     .on("show.bs.dropdown", function(e) {
+    //         let
+    //             layerElem = $(e.relatedTarget)[0],
+    //             $dropdownElem = $(dropdownParent).find(".dropdown-menu"),
 
-      /* Instead of Bootstrap's extremely expensive data API, we'll only listen for dismiss clicks on the
-       * document *while the menu is open!*
-       */
-      (0, _jquery.default)(document).on("click", onDismissDropdown);
-    });
+    //             layerPos = layerElem.getBoundingClientRect(),
+    //             positionRootPos = dropdownParent.getBoundingClientRect();
+
+    //         // Convert the offset to palette-relative coordinates (since that's its offset parent)
+    //         $dropdownElem.css({
+    //             left: (dropdownMousePos.x - $dropdownElem.outerWidth(true) - positionRootPos.left + 1) + "px",
+    //             top: ((layerPos.top - $dropdownElem.outerHeight(true) / 2) - positionRootPos.top) + "px"
+    //         });
+
+    //         /* Instead of Bootstrap's extremely expensive data API, we'll only listen for dismiss clicks on the
+    //          * document *while the menu is open!*
+    //          */
+    //         $(document).on("click", onDismissDropdown);
+    //     });
   }
+
   function updateAvailableBlendModes() {
     var activeLayer = artwork.getActiveLayer();
     while (blendCombo.lastChild) {
@@ -22995,7 +23036,7 @@ function CPLayersPalette(controller) {
       layerButtonsList = document.createElement("ul");
     layerButtonsList.className = 'chickenpaint-layer-buttons list-unstyled';
     var _loop = function _loop() {
-      var button = _buttons[_i3];
+      var button = _buttons[_i2];
       var elem = document.createElement("li");
       elem.setAttribute("data-action", button.action);
       elem.className = 'chickenpaint-small-toolbar-button ' + (button.require ? "chickenpaint-action-require-" + button.require : "");
@@ -23008,7 +23049,7 @@ function CPLayersPalette(controller) {
       });
       layerButtonsList.appendChild(elem);
     };
-    for (var _i3 = 0, _buttons = buttons; _i3 < _buttons.length; _i3++) {
+    for (var _i2 = 0, _buttons = buttons; _i2 < _buttons.length; _i2++) {
       _loop();
     }
     return layerButtonsList;
@@ -23016,8 +23057,8 @@ function CPLayersPalette(controller) {
   function updateActiveLayerActionButtons() {
     var activeLayer = artwork.getActiveLayer(),
       facts = computeLayerPredicates(activeLayer);
-    for (var _i4 = 0, _arr2 = ["mask", "no-mask", "clipping-mask", "no-clipping-mask-or-is-group"]; _i4 < _arr2.length; _i4++) {
-      var requirement = _arr2[_i4];
+    for (var _i3 = 0, _arr2 = ["mask", "no-mask", "clipping-mask", "no-clipping-mask-or-is-group"]; _i3 < _arr2.length; _i3++) {
+      var requirement = _arr2[_i3];
       var elements = layerActionButtons.getElementsByClassName("chickenpaint-action-require-" + requirement);
       var _iterator = _createForOfIteratorHelper(elements),
         _step;
@@ -23461,19 +23502,17 @@ var MENU_ENTRIES = [{
     name: "Undo",
     action: "CPUndo",
     mnemonic: "U",
-    shortcut: "ctrl+z",
-    title: "Undoes the most recent action"
+    shortcut: "ctrl+z"
   }, {
     name: "Redo",
     action: "CPRedo",
     mnemonic: "R",
-    shortcut: "shift+ctrl+z",
-    title: "Redoes a previously undone action"
+    shortcut: "shift+ctrl+z"
   }, {
     name: "Clear history",
     action: "CPClearHistory",
     mnemonic: "H",
-    title: "Removes all undo/redo information to regain memory"
+    title: (0, _lang._)("Removes all undo/redo information to regain memory")
   }, {
     name: "-"
   }, {
@@ -23523,28 +23562,24 @@ var MENU_ENTRIES = [{
     name: "Duplicate",
     action: "CPLayerDuplicate",
     mnemonic: "D",
-    shortcut: "shift+ctrl+d",
-    title: "Creates a copy of the currently selected layer"
+    shortcut: "shift+ctrl+d"
   }, {
     name: "-"
   }, {
     name: "Merge down",
     action: "CPLayerMergeDown",
     mnemonic: "E",
-    shortcut: "ctrl+e",
-    title: "Merges the currently selected layer with the one directly below it"
+    shortcut: "ctrl+e"
   }, {
     name: "Merge group",
     action: "CPGroupMerge",
     mnemonic: "G",
-    shortcut: "shift+ctrl+g",
-    title: "Merges the contents of the selected group"
+    shortcut: "shift+ctrl+g"
   }, {
     name: "Merge all layers",
     action: "CPLayerMergeAll",
     shortcut: "shift+ctrl+e",
-    mnemonic: "A",
-    title: "Merges all the layers"
+    mnemonic: "A"
   }, {
     name: "-"
   }, {
@@ -23579,49 +23614,44 @@ var MENU_ENTRIES = [{
     name: "Clear",
     action: "CPClear",
     mnemonic: "D",
-    shortcut: "del,backspace",
-    title: "Clears the selected area"
+    shortcut: "del,backspace"
   }, {
     name: "Fill",
     action: "CPFill",
     mnemonic: "F",
-    shortcut: "ctrl+f",
-    title: "Fills the selected area with the current color"
+    shortcut: "ctrl+f"
   }, {
     name: "Flip horizontal",
     action: "CPHFlip",
     mnemonic: "H",
-    shortcut: "h",
-    title: "Flips the current selected area horizontally"
+    shortcut: "h"
   }, {
     name: "Flip vertical",
     action: "CPVFlip",
-    mnemonic: "V",
-    title: "Flips the current selected area vertically"
+    mnemonic: "V"
   }, {
     name: "Invert",
     action: "CPFXInvert",
     mnemonic: "I",
-    title: "Invert the image colors"
+    title: (0, _lang._)("Invert the image colors")
   }, {
     name: "-"
   }, {
     name: "Box blur...",
     action: "CPFXBoxBlur",
-    mnemonic: "B",
-    title: "Blur effect"
+    mnemonic: "B"
   }, {
     name: "-"
   }, {
     name: "Monochromatic noise",
     action: "CPMNoise",
     mnemonic: "M",
-    title: "Fills the selection with noise"
+    title: (0, _lang._)("Fills the selection with noise")
   }, {
     name: "Color noise",
     action: "CPCNoise",
     mnemonic: "C",
-    title: "Fills the selection with colored noise"
+    title: (0, _lang._)("Fills the selection with colored noise")
   }]
 }, {
   name: "View",
@@ -23632,28 +23662,23 @@ var MENU_ENTRIES = [{
     mnemonic: "F",
     checkbox: true,
     checked: false
-  },
-  // {
-  //     name: "-"
-  // },本来ならフルスクリーンモードで起動した時は自動的にこの罫線は消える。
-  {
+  }, {
+    name: "-"
+  }, {
     name: "Zoom in",
     action: "CPZoomIn",
     mnemonic: "I",
-    shortcut: "ctrl+=",
-    title: "Zooms in"
+    shortcut: "ctrl+="
   }, {
     name: "Zoom out",
     action: "CPZoomOut",
     mnemonic: "O",
-    shortcut: "ctrl+-",
-    title: "Zooms out"
+    shortcut: "ctrl+-"
   }, {
     name: "Zoom 100%",
     action: "CPZoom100",
     mnemonic: "1",
-    shortcut: "ctrl+0",
-    title: "Resets the zoom factor to 100%"
+    shortcut: "ctrl+0"
   }, {
     action: "CPLinearInterpolation",
     name: "-"
@@ -23661,7 +23686,7 @@ var MENU_ENTRIES = [{
     name: "Smooth-out zoomed canvas",
     action: "CPLinearInterpolation",
     mnemonic: "L",
-    title: "Linear interpolation is used to give a smoothed looked to the picture when zoomed in",
+    title: (0, _lang._)("Linear interpolation is used to give a smoothed looked to the picture when zoomed in"),
     checkbox: true
   }, {
     name: "-"
@@ -23670,14 +23695,12 @@ var MENU_ENTRIES = [{
     action: "CPToggleGrid",
     mnemonic: "G",
     shortcut: "ctrl+g",
-    title: "Displays a grid over the image",
     checkbox: true,
     checked: false
   }, {
     name: "Grid options...",
     action: "CPGridOptions",
-    mnemonic: "D",
-    title: "Shows the grid options dialog box"
+    mnemonic: "D"
   }]
 }, {
   name: "Palettes",
@@ -23685,13 +23708,13 @@ var MENU_ENTRIES = [{
   children: [{
     name: "Rearrange",
     action: "CPArrangePalettes",
-    title: "Rearrange the palette windows"
+    title: (0, _lang._)("Rearrange the palette windows")
   }, {
     name: "Toggle palettes",
     action: "CPTogglePalettes",
     mnemonic: "P",
     shortcut: "tab",
-    title: "Hides or shows all palettes"
+    title: (0, _lang._)("Hides or shows all palettes")
   }, {
     name: "Use old icons",
     action: "CPToolbarStyle",
@@ -23754,20 +23777,17 @@ var MENU_ENTRIES = [{
   children: [{
     name: "Tablet support",
     mnemonic: "T",
-    action: "CPTabletSupport",
-    title: "Help with getting a drawing tablet working"
+    action: "CPTabletSupport"
   }, {
     name: "Shortcuts",
     mnemonic: "S",
-    action: "CPShortcuts",
-    title: "List of keyboard and mouse shortcuts"
+    action: "CPShortcuts"
   }, {
     name: "-"
   }, {
     name: "About",
     mnemonic: "A",
-    action: "CPAbout",
-    title: "Displays some information about ChickenPaint"
+    action: "CPAbout"
   }]
 }];
 
@@ -23851,17 +23871,18 @@ function CPMainMenu(controller, mainGUI) {
 
       // Bootstrap 5: ドロップダウンを初期化
       var dropdown = new bootstrap.Dropdown(dropdownToggle[0]);
-      topLevelMenuElem.on("show.bs.dropdown", function () {
+      dropdownToggle[0].addEventListener('show.bs.dropdown', function (e) {
         updateMenuStates(topLevelMenuElem);
 
         /* Instead of Bootstrap's extremely expensive data API, we'll only listen for dismiss clicks on the
          * document *while the menu is open!*
          */
-        (0, _jquery.default)(document).one("click", function () {
-          if (dropdownMenu.hasClass("show")) {
-            dropdown.hide(); // Bootstrap 5: ドロップダウンを非表示にする
-          }
-        });
+        //メニューが表示されなくなってしまうのでコメントアウト
+        // $(document).one("click", function () {
+        // 	if (dropdownMenu.hasClass("show")) {
+        // 		dropdown.hide(); // Bootstrap 5: ドロップダウンを非表示にする
+        // 	}
+        // });
       });
 
       dropdownMenu.append(topLevelMenuEntry.children.map(function (entry) {
@@ -23879,9 +23900,10 @@ function CPMainMenu(controller, mainGUI) {
         } else {
           entryElem = (0, _jquery.default)('<a class="dropdown-item" href="#" data-action="' + entry.action + '"><span>' + (0, _lang._)(entry.name) + '</span></a>');
           if (entry.checkbox) {
-            entryElem.data("checkbox", true).toggleClass("selected", !!entry.checked);
+            (0, _jquery.default)(entryElem).data("checkbox", true).toggleClass("selected", !!entry.checked);
           }
           if (entry.hideIfNotAvailable) {
+            console.log("entry.hideIfNotAvailable", entry.hideIfNotAvailable);
             entryElem.data("hideIfNotAvailable", true);
           }
         }
@@ -24843,7 +24865,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 */
 
 function CPShortcutsDialog(parent) {
-  var dialog = (0, _jquery.default)("<div class=\"modal fade chickenpaint-shortcuts-dialog\" tabindex=\"-1\" role=\"dialog\">\n                <div class=\"modal-dialog modal-lg\">\n                    <div class=\"modal-content\">\n                        <div class=\"modal-header\">\n                            <h5 class=\"modal-title\">".concat((0, _lang._)("Shortcuts"), "</h5>\n                            <button type=\"button\" class=\"btn btn-close\" data-bs-dismiss=\"modal\" aria-label=\"btn btn-close\">\n                            </button>\n                        </div>\n                        <div class=\"modal-body\">\n                            <p>\n                                ").concat((0, _lang._)("Many of the menu options and painting tools have keyboard shortcuts which are written next to them or appear when you hover."), "\n                            </p>\n                            <p>\n                                ").concat((0, _lang._)("Here are some other shortcuts which are not as obvious!"), "\n                            </p>\n                            <div class=\"chickenpaint-shortcuts-sections\">\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Color swatches palette"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Use as the drawing color"), "\n                                                </dd>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Right</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Remove or replace a color swatch"), "\n                                                </dd>\n                                             </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Line drawing mode"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Shift</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                   ").concat((0, _lang._)("Snap line to nearest 45 degrees"), "\n                                                </dd>\n                                             </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Painting tools"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">1</span> - <span class=\"chickenpaint-shortcut-key\">9</span> , <span class=\"chickenpaint-shortcut-key\">0</span></span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Change brush opacity"), "\n                                                </dd>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">[</span> , <span class=\"chickenpaint-shortcut-key\">]</span></span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Change brush size"), "\n                                                </dd>\n                                            </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Brush palette"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Right</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"chickenpaint-shortcut-alternate\">or</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Shift</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Adjust brush sliders more precisely"), "\n                                                </dd>\n                                            </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Drawing canvas"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Middle</span> <span class=\"chickenpaint-shortcut-alternate\">or</span> <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Space</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Move the canvas around"), "\n                                                </dd>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">R</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Rotate the canvas"), "\n                                                </dd>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Right</span> <span class=\"chickenpaint-shortcut-alternate\">or</span> <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Alt</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Sample the color under the cursor"), "\n                                                </dd>\n                                             </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Layers palette"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Double click</span> <span class=\"chickenpaint-shortcut-alternate\">or</span> <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Right</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Rename layer"), "\n                                                </dd>\n                                             </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            "));
+  var dialog = (0, _jquery.default)("<div class=\"modal fade chickenpaint-shortcuts-dialog\" tabindex=\"-1\" role=\"dialog\">\n                <div class=\"modal-dialog modal-lg\">\n                    <div class=\"modal-content\">\n                        <div class=\"modal-header\">\n                            <h5 class=\"modal-title\">".concat((0, _lang._)("Shortcuts"), "</h5>\n                            <button type=\"button\" class=\"btn btn-close\" data-bs-dismiss=\"modal\" aria-label=\"btn btn-close\">\n                            </button>\n                        </div>\n                        <div class=\"modal-body\">\n                            <p>\n                                ").concat((0, _lang._)("Many of the menu options and painting tools have keyboard shortcuts which are written next to them or appear when you hover."), "\n                            </p>\n                            <p>\n                                ").concat((0, _lang._)("Here are some other shortcuts which are not as obvious!"), "\n                            </p>\n                            <div class=\"chickenpaint-shortcuts-sections\">\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Color swatches palette"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Use as the drawing color"), "\n                                                </dd>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Right</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Remove or replace a color swatch"), "\n                                                </dd>\n                                             </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Line drawing mode"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Shift</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                   ").concat((0, _lang._)("Snap line to nearest 45 degrees"), "\n                                                </dd>\n                                             </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Painting tools"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">1</span> - <span class=\"chickenpaint-shortcut-key\">9</span> , <span class=\"chickenpaint-shortcut-key\">0</span></span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Change brush opacity"), "\n                                                </dd>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">[</span> , <span class=\"chickenpaint-shortcut-key\">]</span></span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Change brush size"), "\n                                                </dd>\n                                            </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Brush palette"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Right</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"chickenpaint-shortcut-alternate\">or</span>\n\t\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Shift</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Adjust brush sliders more precisely"), "\n                                                </dd>\n                                            </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Drawing canvas"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Middle</span> <span class=\"chickenpaint-shortcut-alternate\">or</span> <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Space</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Move the canvas around"), "\n                                                </dd>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">R</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Rotate the canvas"), "\n                                                </dd>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Right</span> <span class=\"chickenpaint-shortcut-alternate\">or</span> <span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Alt</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Sample the color under the cursor"), "\n                                                </dd>\n                                             </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                                <div class=\"chickenpaint-shortcuts-section\">\n                                    <h5>").concat((0, _lang._)("Layers palette"), "</h5>\n                                    <ul class=\"chickenpaint-shortcuts-list list-unstyled\">\n                                        <li>\n                                            <dl>\n                                                <dt>\n                                                    <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Double click</span> <span class=\"chickenpaint-shortcut-alternate\">or</span> <span class=\"chickenpaint-shortcut\"><span class=\"fa fa-mouse-pointer\"></span> Right</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Rename layer"), "\n                                                </dd>\n                                                <dt>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Shift</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Toggle mask enable/disable"), "\n                                                </dd>\n                                                <dt>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Alt</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Toggle mask View"), "\n                                                </dd>\n\t\t\t\t\t\t\t\t\t\t\t\t<dt>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Ctrl</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Apply layer mask"), "\n                                                </dd>\n\t\t\t\t\t\t\t\t\t\t\t\t<dt>\n\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Shift</span></span> +\n\t\t\t\t\t\t\t\t\t\t\t\t<span class=\"chickenpaint-shortcut\"><span class=\"chickenpaint-shortcut-key\">Ctrl</span> + <span class=\"fa fa-mouse-pointer\"></span> Left</span>\n                                                </dt>\n                                                <dd>\n                                                    ").concat((0, _lang._)("Delete layer mask"), "\n                                                </dd>\n                                             </dl>\n                                        </li>\n                                    </ul>\n                                </div>\n                            </div>\n                        </div>\n                    </div>\n                </div>\n            "));
 
   // Destroy the modal upon close
   dialog.on("hidden.bs.modal", function (e) {
@@ -26477,6 +26499,7 @@ module.exports={
     "Flip vertical": "上下反転",
     "Invert": "ネガポジ反転",
     "Box blur...": "ぼかし",
+    "Box blur": "ぼかし",
     "Blur amount (pixels)": "ぼかし量(ピクセル単位)",
     "Iterations (1-8, larger gives smoother blur)": "反復(1-8,大きいほどぼかしが滑らか)",
     "Monochromatic noise": "単色ノイズ",
@@ -26508,9 +26531,20 @@ module.exports={
   "Help": "ヘルプ",
     "Tablet support":  "タブレットサポート",
     "Shortcuts": "ショートカット",
-    "About": "ChickenPaintについて",
+    "About": "ChickenPaint beについて",
   
-  "Misc": "操作",
+	"Removes all undo/redo information to regain memory": "履歴をクリアしてメモリを開放します",
+	"Clears the selected area":	"消去",
+	"Invert the image colors": "ネガポジ反転",
+	"Blur effect": "ぼかしフィルタ",
+	"Fills the selection with noise": "単色ノイズで塗り潰し",
+	"Fills the selection with colored noise": "カラーノイズで塗り潰し",
+	"Linear interpolation is used to give a smoothed looked to the picture when zoomed in":
+	"画像の拡大時に補完して滑らかに表示します",
+	"Rearrange the palette windows": "パレットを再配置",
+	"Hides or shows all palettes": "パレットの表示/非表示",
+
+"Misc": "操作",
   
   "Round Pixelated": "円ピクセル",
   "Round Hard Edge": "円ハードエッジ",
@@ -26657,6 +26691,9 @@ module.exports={
 "Sample the color under the cursor": "キャンバスの色をスポイト",
 "Layers palette": "レイヤーパレット",
 "Rename layer": "レイヤー名を変更",
+"Toggle mask enable/disable": "マスクの有効/無効切り替え",
+"Toggle mask View":"マスクの表示/非表示切り替え",
+
 
   "Save Oekaki": "保存",
   
