@@ -26530,7 +26530,7 @@ module.exports={
   "Help": "ヘルプ",
     "Tablet support":  "タブレットサポート",
     "Shortcuts": "ショートカット",
-    "About": "ChickenPaint beについて",
+    "About": "ChickenPaint Beについて",
   
 	"Removes all undo/redo information to regain memory": "履歴をクリアしてメモリを開放します",
 	"Clears the selected area":	"消去",
@@ -26657,6 +26657,9 @@ module.exports={
   "Whoops! You can't draw on a group": "グループフォルダには描けません",
   "Whoops! All of the selected pixels are transparent!": "レイヤーが空です",
  
+  "Image": "画像",
+  "Layer mask": "レイヤーマスク",
+
   "Sorry, you can't remove the last remaining layer in the drawing.": "レイヤーが1つしか残っていないため削除できません。",
  
   "Are you sure you want to send your drawing to the server and finish drawing now?": "お絵かきをサーバーに送信します。終了してもよろしいですか？",
