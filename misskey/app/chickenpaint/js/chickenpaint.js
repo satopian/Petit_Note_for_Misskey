@@ -22457,8 +22457,9 @@ function CPLayersPalette(controller) {
       statusDiv.className = "chickenpaint-layer-status";
       layerDiv.appendChild(statusDiv);
       layerDiv.setAttribute("data-display-index", "" + index);
-      layerDiv.setAttribute("data-toggle", "dropdown");
-      layerDiv.setAttribute("data-target", "#chickenpaint-layer-pop");
+      // layerDiv.setAttribute("data-toggle", "dropdown");
+      // layerDiv.setAttribute("data-target", "#chickenpaint-layer-pop");
+
       return layerDiv;
     }
     function showRenameBoxForLayer(displayIndex) {
@@ -25417,8 +25418,9 @@ function CPSwatchesPalette(controller) {
     this.setColor(color);
     swatchElem.href = "#";
     swatchElem.className = "chickenpaint-color-swatch dropdown-toggle";
-    //"data-bs-toggle"に設定 bs5
-    swatchElem.setAttribute("data-bs-toggle", "dropdown");
+    //"data-bs-toggle"に設定しない 
+    // swatchElem.setAttribute("data-bs-toggle", "dropdown");
+
     mnuRemove.className = "dropdown-item";
     mnuRemove.href = "#";
     mnuRemove.innerHTML = (0, _lang._)("Remove");
@@ -25516,11 +25518,11 @@ function CPSwatchesPalette(controller) {
       if (!/^<a data-color=/i.test(swatch.outerHTML) || !/chickenpaint-color-swatch/.test(swatch.className)) {
         return; //<a data-color=で始まらない場合もreturn
       }
+      //"data-bs-toggle"に設定していなければ必要ないため、コメントアウト
       //コンテキストメニューを閉じる
-      var dropdown = new bootstrap.Dropdown((0, _jquery.default)(swatch), {
-        autoClose: false
-      }); // Bootstrap 5: ドロップダウンを初期化
-      dropdown.hide();
+      // let dropdown = new bootstrap.Dropdown($(swatch)); // Bootstrap 5: ドロップダウンを初期化
+      // dropdown.hide();
+
       if (e.button == 0 /* Left */ && swatch.getAttribute("data-color") !== undefined) {
         controller.setCurColor(new _CPColor.default(parseInt(swatch.getAttribute("data-color"), 10)));
         e.stopPropagation();
@@ -25535,9 +25537,7 @@ function CPSwatchesPalette(controller) {
       }
 
       e.preventDefault();
-      var dropdown = new bootstrap.Dropdown((0, _jquery.default)(swatch), {
-        autoClose: false
-      }); // Bootstrap 5: ドロップダウンを初期化
+      var dropdown = new bootstrap.Dropdown((0, _jquery.default)(swatch)); // Bootstrap 5: ドロップダウンを初期化
       dropdown.toggle();
 
       // ドロップダウンメニュー内のクリックを検出して、メニューを閉じる
