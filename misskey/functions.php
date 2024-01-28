@@ -1,5 +1,5 @@
 <?php
-$functions_ver=20231227;
+$functions_ver=20240127;
 //編集モードログアウト
 function logout(){
 	$resno=(int)filter_input(INPUT_GET,'resno',FILTER_VALIDATE_INT);
@@ -403,6 +403,7 @@ function t($str){
 	if(!$str){
 		return '';
 	}
+	$str=(string)$str;
 	return str_replace("\t","",$str);
 }
 //タグ除去
@@ -1127,6 +1128,9 @@ function getTranslatedLayerName() {
 		}
 		if (strpos($language, 'zh-cn') === 0) {
 			return "图层";
+		}
+		if (strpos($language, 'ko') === 0) {
+			return "레이어";
 		}
 		if (strpos($language, 'fr') === 0) {
 			return "Calque";

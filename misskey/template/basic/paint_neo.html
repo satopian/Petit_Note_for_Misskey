@@ -22,8 +22,8 @@ return true;
 return;
 }
 </script>
-<link rel="stylesheet" href="./app/neo/neo.css?<?=h($parameter_day)?><?=h($petit_lot)?>" type="text/css">
-<script src="./app/neo/neo.js?<?=h($parameter_day)?><?=h($petit_lot)?>" charset="UTF-8"></script>
+<link rel="stylesheet" href="./app/neo/neo.css?<?=h($parameter_day)?><?=h($petit_lot)?>">
+<script src="./app/neo/neo.js?<?=h($parameter_day)?><?=h($petit_lot)?>"></script>
 <script>
 	// https://qiita.com/tsmd/items/cfb5dcbec8433b87dc36
 	function isPinchZooming () {//ピンチズームを検知
@@ -48,13 +48,21 @@ return;
 	function neo_add_disable_touch_move() {
 		document.getElementById('NEO').addEventListener('touchmove', neo_disable_touch_move ,{ passive: false });
 	}
-	document.addEventListener('touchmove', function(e) {
+	document.addEventListener('touchmove', (e)=> {
 		neo_add_disable_touch_move();
 		if(isPinchZooming ()){//ピンチズーム使用時はNEOの網目でスワイプする
 			document.getElementById('NEO').removeEventListener('touchmove', neo_disable_touch_move ,{ passive: false });
 		}
 	});
 	window.addEventListener('DOMContentLoaded',neo_add_disable_touch_move,false);
+	//Firefoxでメニューバーが開閉するのため、Altキーのデフォルトの処理をキャンセル
+	document.addEventListener('keyup', (e)=> {
+		// e.key を利用して特定のキーのアップイベントを検知する
+		if (e.key.toLowerCase() === 'alt') {
+			e.preventDefault(); // Alt キーのデフォルトの動作をキャンセル
+		}
+	});
+
 </script>
 </head>
 <body>
@@ -140,13 +148,8 @@ pe[n]}}function GradView(a,f){d=document}function showHideLayer(){d=document;var
 <param name="tool_advance" value="true">
 <param name="thumbnail_width" value="100%">
 <param name="thumbnail_height" value="100%">
-<param name="url_save" value="./?mode=saveimage&tool=neo">
-<param name="url_exit" value="./?mode=<?=h($paintmode)?>
-<?php if($rep):?>
-&no=<?=h($no)?>&id=<?=h($id)?>&pwd=<?=h($pwd)?>&repcode=<?=h($repcode)?>
-<?php endif;?>
-">
-
+<param name="url_save" value="./?mode=saveimage&tool=neo&usercode=<?=h($usercode)?>&stime=<?=time();?><?php if($resto):?>&resto=<?=h($resto)?><?php endif;?><?php if($hide_animation):?>&hide_animation=<?=h($hide_animation)?><?php endif;?><?php if($rep):?>&repcode=<?=h($repcode)?><?php endif;?>">
+<param name="url_exit" value="./?mode=<?=h($paintmode)?><?php if($rep):?>&no=<?=h($no)?>&id=<?=h($id)?>&pwd=<?=h($pwd)?>&repcode=<?=h($repcode)?><?php endif;?>">
 <?php if($anime):?>
 <param name="thumbnail_type" value="animation">
 <?php endif;?>
@@ -233,7 +236,7 @@ if(DynamicColor) PaletteListSetColor();
 <INPUT SIZE="20" NAME="count">
 </FORM>
 <Script>
-timerID=10;stime=new Date;function SetTimeCount(){now=new Date;s=Math.floor((now.getTime()-stime.getTime())/1E3);disp="";86400<=s&&(d=Math.floor(s/86400),disp+=d+"<?php if($en):?>day <?php else:?>\u65e5<?php endif;?>",s-=86400*d);3600<=s&&(h=Math.floor(s/3600),disp+=h+"<?php if($en):?>hr <?php else:?>\u6642\u9593<?php endif;?>",s-=3600*h);60<=s&&(m=Math.floor(s/60),disp+=m+"<?php if($en):?>min <?php else:?>\u5206<?php endif;?>",s-=60*m);document.watch.count.value=disp+s+"<?php if($en):?>sec<?php else:?>\u79d2<?php endif;?>";clearTimeout(timerID);timerID = setTimeout(function() { SetTimeCount(); }, 250);};
+timerID=10;stime=new Date;function SetTimeCount(){now=new Date;s=Math.floor((now.getTime()-stime.getTime())/1E3);disp="";86400<=s&&(d=Math.floor(s/86400),disp+=d+"<?php if($en):?>day <?php else:?>\u65e5<?php endif;?>",s-=86400*d);3600<=s&&(h=Math.floor(s/3600),disp+=h+"<?php if($en):?>hr <?php else:?>\u6642\u9593<?php endif;?>",s-=3600*h);60<=s&&(m=Math.floor(s/60),disp+=m+"<?php if($en):?>min <?php else:?>\u5206<?php endif;?>",s-=60*m);document.watch.count.value=disp+s+"<?php if($en):?>sec<?php else:?>\u79d2<?php endif;?>";clearTimeout(timerID);timerID = setTimeout(()=>{ SetTimeCount(); }, 250);};
 document.addEventListener('DOMContentLoaded',SetTimeCount,false);
 </Script>
 </div>

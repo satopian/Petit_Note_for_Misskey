@@ -72,7 +72,8 @@ $usercode = $usercode ? $usercode : $session_usercode;
 if(!$usercode){//user-codeがなければ発行
 	$usercode = substr(crypt(md5($userip.uniqid()),'id'),-12);
 	//念の為にエスケープ文字があればアルファベットに変換
-	$usercode = strtr($usercode,"!\"#$%&'()+,/:;<=>?@[\\]^`/{|}~\t","ABCDEFGHIJKLMNOabcdefghijklmno");
+	$usercode = t(strtr($usercode,"!\"#$%&'()+,/:;<=>?@[\\]^`/{|}~\t","ABCDEFGHIJKLMNOabcdefghijklmno"));
+
 }
 setcookie("usercode", $usercode, time()+(86400*365),"","",false,true);//1年間
 $_SESSION['usercode']=$usercode;
