@@ -191,12 +191,4 @@ jQuery(function() {
 		}, 500); //0.5秒かけてトップへ移動
 		return false;
 	});
-	// https://www.webdesignleaves.com/pr/plugins/luminous-lightbox.html
-	const luminousElems = document.querySelectorAll('.luminous');
-	//取得した要素の数が 0 より大きければ
-	if( luminousElems.length > 0 ) {
-		luminousElems.forEach( (elem) => {
-		new Luminous(elem);
-		});
-	}
 });
