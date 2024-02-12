@@ -83,9 +83,9 @@ Tegaki.open({
         // console.log(blob);
 		var tgkr = Tegaki.replayRecorder ? Tegaki.replayRecorder.toBlob() : null;
 		var formData = new FormData();
-		if(tgkr){
-			formData.append("tgkr",tgkr,'blob');
-		}
+		// if(tgkr){
+		// 	formData.append("tgkr",tgkr,'blob');
+		// }
 		formData.append("picture",blob,'blob');
 		formData.append("usercode", "<?=h($usercode)?>");
 		 <?php if($rep):?>formData.append("repcode", "<?=h($repcode)?>");<?php endif;?>

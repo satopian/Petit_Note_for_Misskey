@@ -84,7 +84,7 @@
 		</span>
 	<input type="hidden" name="to_misskey" id="to_misskey" value="on">	
 </div>
-<span class="icon-Simpleicons-Team-Simple-Misskey misskey_form_misskey_icon"></span> <input type="submit" value="<?php if($en):?>Post<?php else:?>投稿する<?php endif;?>">
+<span class="icon-Simpleicons-Team-Simple-Misskey misskey_form_misskey_icon"></span> <input type="submit" value="<?php if($en):?>Post<?php else:?>投稿する<?php endif;?>" id="form_submit">
 </form>
 <script>
 document.addEventListener("DOMContentLoaded", function() {
@@ -121,6 +121,7 @@ document.getElementById('hide_content').addEventListener('change', function() {
 </div>
 <div id="bottom"></div>
 <div id="page_top"><a class="icon-angles-up-solid"></a></div>
+<script>const paintcom = true;</script> 
 <script src="lib/<?=h(JQUERY)?>"></script>
 <script src="<?=h($skindir)?>js/common.js?<?=h($petit_lot)?>"></script>
 </body>

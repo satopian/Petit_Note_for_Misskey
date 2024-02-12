@@ -112,7 +112,7 @@
 				klecks.getPSD().then((psd)=>{
 					var formData = new FormData();
 					formData.append("picture", klecks.getPNG(),'blob');
-					formData.append("psd", psd,'blob');
+					// formData.append("psd", psd,'blob');
 					formData.append("usercode", "<?=h($usercode)?>");
 					<?php if($rep):?>formData.append("repcode", "<?=h($repcode)?>");<?php endif;?>
 					formData.append("tool", "klecks");
