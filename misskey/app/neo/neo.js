@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 var Neo = function () {};
 
-Neo.version = "1.6.1";
+Neo.version = "1.6.2";
 Neo.painter;
 Neo.fullScreen = false;
 Neo.uploaded = false;
@@ -1140,7 +1140,7 @@ Neo.submit = function (board, blob, thumbnail, thumbnail2) {
   if (Neo.config.send_header_timer == "true") {
     headerString = "timer=" + timer + "&" + headerString;
   }
-  console.log("header: " + headerString);
+//console.log("header: " + headerString);
 
   if (Neo.config.neo_emulate_security_error == "true") {
     var securityError = false;
@@ -1164,18 +1164,26 @@ Neo.submit = function (board, blob, thumbnail, thumbnail2) {
     }
   }
 
-  if (Neo.config.neo_send_with_formdata == "true") {
-    var formData = new FormData();
-    formData.append('header', headerString);
-	  formData.append('picture',blob,blob);
+  let pchFileNotAppended=false;
 
-	  if (thumbnail) {
-		  formData.append('thumbnail',thumbnail,blob);
+  if (Neo.config.neo_send_with_formdata == "true") {
+	var formData = new FormData();
+	formData.append('header', headerString);
+	formData.append('picture',blob,blob);
+	let thumbnail_size = 0;
+	if (thumbnail) {
+		formData.append('thumbnail',thumbnail,blob);
+		thumbnail_size=thumbnail.size;
+	}
+	if (thumbnail2) {
+	  if (!Neo.config.neo_max_pch || isNaN(parseInt(Neo.config.neo_max_pch)) || ((parseInt(Neo.config.neo_max_pch)*1024*1024) > (headerString.length+blob.size+thumbnail_size+thumbnail2.size))) {
+		formData.append('pch',thumbnail2,blob);
+		}else{
+			pchFileNotAppended = true;
+		}
 	  }
-	  if (thumbnail2) {
-		  formData.append('pch',thumbnail2,blob);
-    }
   }
+
   //console.log("submit url=" + url + " header=" + headerString);
 
   var header = new Blob([headerString]);
@@ -1269,9 +1277,18 @@ Neo.submit = function (board, blob, thumbnail, thumbnail2) {
 				Neo.translate("投稿に失敗。時間を置いて再度投稿してみてください。"));
 		})
 	}
-
 	if (Neo.config.neo_send_with_formdata == "true") {
-		postData(url, formData);
+
+		if(pchFileNotAppended){
+			if (window.confirm(Neo.translate("画像のみが送信されます。\nレイヤー情報は保持されません。"))) {
+				postData(url, formData);
+			} else {
+				console.log("中止しました。");
+			}
+		}else{
+			postData(url, formData);
+		}
+
 	}else{
 		postData(url, body);
 	}
@@ -1514,6 +1531,7 @@ Neo.dictionary = {
     "投稿に失敗。\nWAFの誤検知かもしれません。\nもう少し描いてみてください。":
       "It may be a WAF false positive.\nTry to draw a little more.",
     "ファイルが見当たりません。":"File not found",
+	"画像のみが送信されます。\nレイヤー情報は保持されません。":"Only image will be sent.\nLayer information will not be retained.",
   },
   enx: {
     やり直し: "Redo",
@@ -1575,6 +1593,7 @@ Neo.dictionary = {
     "投稿に失敗。\nWAFの誤検知かもしれません。\nもう少し描いてみてください。":
       "It may be a WAF false positive.\nTry to draw a little more.",
     "ファイルが見当たりません。":"File not found.",
+	"画像のみが送信されます。\nレイヤー情報は保持されません。":"Only image will be sent.\nLayer information will not be retained.",
  },
   es: {
     やり直し: "Rehacer",
@@ -1636,7 +1655,8 @@ Neo.dictionary = {
     "投稿に失敗。\nWAFの誤検知かもしれません。\nもう少し描いてみてください。":
 	  "Puede ser un falso positivo de WAF.\nIntenta dibujar un poco más.",
     "ファイルが見当たりません。":"Archivo no encontrado.",
-  },
+	"画像のみが送信されます。\nレイヤー情報は保持されません。":"Sólo se enviará la imagen.\nNo se conservará la información de la capa.",
+},
 };
 
 Neo.translate = (function () {
@@ -2173,17 +2193,22 @@ Neo.Painter.prototype._keyDownHandler = function (e) {
     this.tool.keyDownHandler(e);
   }
 
-  //スペース・Shift+スペースででスクロールしないように
-  // if (document.activeElement != this.inputText) e.preventDefault();
-  // console.log(document.activeElement.tagName)
-  if (
-    document.activeElement != this.inputText &&
-    !(document.activeElement.tagName == "INPUT")
-  ) {
-    e.preventDefault();
-  }
-};
-
+	//スペース・Shift+スペースででスクロールしないように
+	// if (document.activeElement != this.inputText) e.preventDefault();
+	// console.log(document.activeElement.tagName)
+	//ctrlキーとの組み合わせのブラウザデフォルトのショートカットキーを無効化
+	//但しctrl+v,ctrl+x,ctrl+aは使用可能
+	const keys = ["+",";","=","-","s","h","r","y","z","u"];
+	if ((e.ctrlKey||e.metaKey) && keys.includes(e.key.toLowerCase())){
+		e.preventDefault();
+	}
+	//text入力と、入力フォーム以外はすべてのキーボードイベントを無効化
+	if(document.activeElement != this.inputText){
+		if (!(document.activeElement.tagName.toLocaleUpperCase() === "INPUT" || document.activeElement.tagName.toLocaleUpperCase() === "TEXTAREA")) {
+		e.preventDefault();
+		}
+	}
+} 
 Neo.Painter.prototype._keyUpHandler = function (e) {
   this.isShiftDown = e.shiftKey;
   this.isCtrlDown = e.ctrlKey;
