@@ -110,8 +110,8 @@ if (window.PointerEvent) {
 }
 //ブラウザデフォルトのキー操作をキャンセル
 document.addEventListener("keydown", function (e) {
-  var keys = ["+", ";", "=", "-", "s", "h", "r"];
-  if (keys.includes(e.key.toLowerCase())) {
+  var keys = ["+", ";", "=", "-", "s", "h", "r", "o"];
+  if ((e.ctrlKey || e.metaKey) && keys.includes(e.key.toLowerCase()) || e.key === "Enter") {
     // console.log("e.key",e.key);
     e.preventDefault();
   }
@@ -1000,6 +1000,10 @@ function ChickenPaint(options) {
       },
       CPPost: {
         action: function action() {
+          //画面移動の関数が定義されている時はユーザーが定義した関数で画面移動
+          if (typeof handleExit === 'function') {
+            return handleExit();
+          }
           window.location = options.postUrl;
         },
         isSupported: function isSupported() {
@@ -5327,6 +5331,9 @@ CPBlend.normalOntoOpaqueFusionWithTransparentLayer = function (fusion, layer, la
         color1 = void 0;
       if (alpha1) {
         if (false) {
+          fusion.data[pixIndex] = layer.data[pixIndex];
+          fusion.data[pixIndex + 1] = layer.data[pixIndex + 1];
+          fusion.data[pixIndex + 2] = layer.data[pixIndex + 2];
         } else {
           var invAlpha1 = 255 - alpha1;
           color1 = layer.data[pixIndex];
@@ -5500,6 +5507,9 @@ CPBlend.normalOntoOpaqueFusionWithTransparentLayerMasked = function (fusion, lay
         color1 = void 0;
       if (alpha1) {
         if (false) {
+          fusion.data[pixIndex] = layer.data[pixIndex];
+          fusion.data[pixIndex + 1] = layer.data[pixIndex + 1];
+          fusion.data[pixIndex + 2] = layer.data[pixIndex + 2];
         } else {
           var invAlpha1 = 255 - alpha1;
           color1 = layer.data[pixIndex];
@@ -18377,7 +18387,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 */
 
 function CPBoxBlurDialog(parent, controller) {
-  var dialog = (0, _jquery.default)("<div class=\"modal fade\" tabindex=\"-1\" role=\"dialog\">\n                <div class=\"modal-dialog\">\n                    <div class=\"modal-content\">\n                        <div class=\"modal-header\">\n                            <h5 class=\"modal-title\">".concat((0, _lang._)("Box blur"), "</h5>\n                            <button type=\"button\" class=\"btn btn-close\" data-bs-dismiss=\"modal\" aria-label=\"btn btn-close\">\n                            </button>\n                        </div>\n                        <div class=\"modal-body\">\n                            <form>\n                                <div class=\"form-group\">\n                                    <label>").concat((0, _lang._)("Blur amount (pixels)"), "</label>\n                                    <input type=\"number\" class=\"form-control chickenpaint-blur-amount\" value=\"3\">\n                                </div>\n                                <div class=\"form-group\">\n                                    <label>").concat((0, _lang._)("Iterations (1-8, larger gives smoother blur)"), "</label>\n                                    <input type=\"number\" class=\"form-control chickenpaint-blur-iterations\" value=\"1\">\n                                </div>\n                            </form>\n                        </div>\n                        <div class=\"modal-footer\">\n                            <button type=\"button\" class=\"btn btn-light\" data-bs-dismiss=\"modal\">").concat((0, _lang._)("Cancel"), "</button>\n                            <button type=\"button\" class=\"btn btn-primary chickenpaint-apply-box-blur\" data-bs-dismiss=\"modal\">").concat((0, _lang._)("Ok"), "</button>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        ")),
+  var dialog = (0, _jquery.default)("<div class=\"modal fade\" tabindex=\"-1\" role=\"dialog\">\n                <div class=\"modal-dialog\">\n                    <div class=\"modal-content\">\n                        <div class=\"modal-header\">\n                            <h5 class=\"modal-title\">".concat((0, _lang._)("Box blur"), "</h5>\n                            <button type=\"button\" class=\"btn btn-close\" data-bs-dismiss=\"modal\" aria-label=\"btn btn-close\">\n                            </button>\n                        </div>\n                        <div class=\"modal-body\">\n                            <form>\n                                <div class=\"form-group\">\n                                    <label>").concat((0, _lang._)("Blur amount (pixels)"), "</label>\n                                    <input type=\"number\" class=\"form-control chickenpaint-blur-amount\" value=\"3\">\n                                </div>\n                                <div class=\"form-group\">\n                                    <label>").concat((0, _lang._)("Iterations (1-8, larger gives smoother blur)"), "</label>\n                                    <input type=\"number\" class=\"form-control chickenpaint-blur-iterations\" value=\"1\" min=\"1\" max=\"8\">\n                                </div>\n                            </form>\n                        </div>\n                        <div class=\"modal-footer\">\n                            <button type=\"button\" class=\"btn btn-light\" data-bs-dismiss=\"modal\">").concat((0, _lang._)("Cancel"), "</button>\n                            <button type=\"button\" class=\"btn btn-primary chickenpaint-apply-box-blur\" data-bs-dismiss=\"modal\">").concat((0, _lang._)("Ok"), "</button>\n                        </div>\n                    </div>\n                </div>\n            </div>\n        ")),
     blurAmountElem = (0, _jquery.default)(".chickenpaint-blur-amount", dialog),
     blurIterationsElem = (0, _jquery.default)(".chickenpaint-blur-iterations", dialog),
     applyButton = (0, _jquery.default)(".chickenpaint-apply-box-blur", dialog);
@@ -18400,13 +18410,13 @@ function CPBoxBlurDialog(parent, controller) {
   dialog[0].addEventListener('shown.bs.modal', function (e) {
     blurAmountElem.trigger('focus');
   });
-  parent.addEventListener("keydown", function keydown_EnterKey(e) {
+  dialog[0].addEventListener("keydown", function (e) {
     if (e.key === "Enter" && dialog.hasClass('show')) {
       applyButton.trigger('click');
       e.preventDefault(); // デフォルトのフォーム送信を阻止
-      parent.removeEventListener("keydown", keydown_EnterKey);
     }
   });
+
   parent.appendChild(dialog[0]);
 }
 module.exports = exports.default;
@@ -18620,12 +18630,13 @@ function CPBrushPanel(controller) {
   });
   tipCombo.addEventListener("change", function (e) {
     controller.getBrushInfo().tip = parseInt(tipCombo.value, 10);
+    tipCombo.blur();
   });
-  tipCombo.onfocus = function () {
-    //フォーカスを検出したら
-    document.activeElement.blur(); //フォーカスを外す
-    // console.log(document.activeElement);
-  };
+  // tipCombo.onfocus = ()=>{//フォーカスを検出したら
+  // 	document.activeElement.blur();//フォーカスを外す
+  // 	// console.log(document.activeElement);
+
+  // }; 
 
   tipCombo.className = "form-control form-control-sm";
   tipCombo.tabIndex = -1;
@@ -21035,7 +21046,9 @@ function CPCanvas(controller) {
   canvas.addEventListener("pointerdown", handlePointerDown);
   canvas.addEventListener("pointermove", handlePointerMove);
   canvas.addEventListener("pointerup", handlePointerUp);
-  canvas.addEventListener("wheel", handleMouseWheel);
+  canvas.addEventListener("wheel", handleMouseWheel, {
+    passive: false
+  });
   document.addEventListener("keydown", handleKeyDown);
   document.addEventListener("keyup", handleKeyUp);
 
@@ -21964,11 +21977,10 @@ function CPGridDialog(parent, canvas) {
   });
 
   // Enter キーが押されたときの処理を追加
-  dialog[0].addEventListener('keydown', function keydown_EnterKey(e) {
+  dialog[0].addEventListener('keydown', function (e) {
     if (e.key === "Enter") {
       e.preventDefault(); // デフォルトのフォーム送信を阻止
       applyButton.trigger('click');
-      dialog[0].removeEventListener("keydown", keydown_EnterKey);
     }
   });
   parent.appendChild(dialog[0]);
@@ -23342,12 +23354,12 @@ function CPLayersPalette(controller) {
       action: "CPSetLayerBlendMode",
       blendMode: parseInt(blendCombo.value, 10)
     });
+    blendCombo.blur();
   });
-  blendCombo.onfocus = function () {
-    //フォーカスを検出したら
-    document.activeElement.blur(); //フォーカスを外す
-    // console.log(document.activeElement);
-  };
+  // blendCombo.onfocus = ()=>{//フォーカスを検出したら
+  // 	document.activeElement.blur();//フォーカスを外す
+  // 	// console.log(document.activeElement);
+  // }; 
 
   body.appendChild(blendCombo);
   alphaSlider.title = function (value) {

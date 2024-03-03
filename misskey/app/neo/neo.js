@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 var Neo = function () {};
 
-Neo.version = "1.6.2";
+Neo.version = "1.6.3";
 Neo.painter;
 Neo.fullScreen = false;
 Neo.uploaded = false;
@@ -1254,6 +1254,10 @@ Neo.submit = function (board, blob, thumbnail, thumbnail2) {
 				exitURL = responseURL.replace(/^URL:/, "");
 				}
 				Neo.uploaded = true;
+				//画面移動の関数が定義されている時はユーザーが定義した関数で画面移動
+				if (typeof Neo.handleExit === 'function') {
+					return Neo.handleExit();
+				}
 				return location.href = exitURL;
 				})
 			}else{
@@ -2023,22 +2027,25 @@ Neo.Painter.prototype._initCanvas = function (div, width, height) {
       function (e) {
         ref._mouseDownHandler(e);
       },
-      false
-    );
+	  { passive: false,
+		capture: false }
+		);
     container.addEventListener(
       "touchmove",
       function (e) {
         ref._mouseMoveHandler(e);
       },
-      false
-    );
+	  { passive: false,
+		capture: false }
+	  );
     container.addEventListener(
       "touchend",
       function (e) {
         ref._mouseUpHandler(e);
       },
-      false
-    );
+	  { passive: false,
+		capture: false }
+	  );
 
     document.onkeydown = function (e) {
       ref._keyDownHandler(e);
@@ -2198,7 +2205,7 @@ Neo.Painter.prototype._keyDownHandler = function (e) {
 	// console.log(document.activeElement.tagName)
 	//ctrlキーとの組み合わせのブラウザデフォルトのショートカットキーを無効化
 	//但しctrl+v,ctrl+x,ctrl+aは使用可能
-	const keys = ["+",";","=","-","s","h","r","y","z","u"];
+	const keys = ["+",";","=","-","s","h","r","y","z","u","o"];
 	if ((e.ctrlKey||e.metaKey) && keys.includes(e.key.toLowerCase())){
 		e.preventDefault();
 	}
@@ -7225,15 +7232,17 @@ Neo.Button.prototype.init = function (name, params) {
       ref._mouseDownHandler(e);
       e.preventDefault();
     },
-    true
-  );
+	{ passive: false,
+	capture: true }
+	);
   this.element.addEventListener(
     "touchend",
     function (e) {
       ref._mouseUpHandler(e);
     },
-    true
-  );
+	{ passive: false,
+	capture: true }
+	  );
 
   this.element.className = !this.params.type == "fill" ? "button" : "buttonOff";
 
@@ -7391,8 +7400,9 @@ Neo.ColorTip.prototype.init = function (name, params) {
       ref._mouseDownHandler(e);
       e.preventDefault();
     },
-    true
-  );
+	{ passive: false,
+	capture: true }
+	  );
   this.element.addEventListener(
     "touchend",
     function (e) {
@@ -7526,7 +7536,8 @@ Neo.ToolTip.prototype.init = function (name, params) {
       ref._mouseDownHandler(e);
       e.preventDefault();
     },
-    true
+	{ passive: false,
+	capture: true }
   );
   this.element.addEventListener(
     "touchend",
@@ -8386,7 +8397,8 @@ Neo.LayerControl.prototype.init = function (name, params) {
       ref._mouseDownHandler(e);
       e.preventDefault();
     },
-    true
+	{ passive: false,
+	capture: true }
   );
 
   this.element.className = "layerControl";
@@ -8467,7 +8479,8 @@ Neo.ReserveControl.prototype.init = function (name, params) {
       ref._mouseDownHandler(e);
       e.preventDefault();
     },
-    true
+	{ passive: false,
+	capture: true }
   );
 
   this.element.className = "reserve";
@@ -8671,7 +8684,8 @@ Neo.ViewerBar.prototype.init = function (name, params) {
       ref._touchHandler(e);
       e.preventDefault();
     },
-    true
+	{ passive: false,
+	capture: true }
   );
 
   this.update();
