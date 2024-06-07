@@ -124,7 +124,7 @@ function checkBrowserSupport() {
   return true;
 }
 function isSmallScreen() {
-  return (0, _jquery.default)(window).width() < 430 || (0, _jquery.default)(window).height() < 430;
+  return window.innerWidth <= 450 || window.innerHeight <= 450;
 }
 function createDrawingTools() {
   var tools = new Array(ChickenPaint.T_MAX);
@@ -25522,8 +25522,10 @@ function CPStrokePalette(cpController) {
       cpController.actionPerformed({
         action: button.command
       });
-      that.userIsDoneWithUs();
+      // that.userIsDoneWithUs();
+      //ボタンクリック時にパレットを折りたたむ機能を削除
     });
+
     body.appendChild(listElem);
   }
   buildButtons();
@@ -25712,9 +25714,11 @@ function CPSwatchesPalette(controller) {
         controller.setCurColor(new _CPColor.default(parseInt(swatch.getAttribute("data-color"), 10)));
         e.stopPropagation();
         e.preventDefault();
-        that.userIsDoneWithUs();
+        // that.userIsDoneWithUs();
+        //ボタンクリック時にパレットを折りたたむ機能を削除
       }
     });
+
     swatchPanel.addEventListener("contextmenu", function (e) {
       var swatch = e.target;
       if (!/^<a data-color=/i.test(swatch.outerHTML) || !/chickenpaint-color-swatch/.test(swatch.className)) {
@@ -26439,7 +26443,7 @@ function CPToolPalette(cpController) {
         action: button.command
       });
       // that.userIsDoneWithUs();
-      //ツールのボタンをクリックするとツールパレットの折りたたみになる機能を停止
+      //ボタンクリック時にパレットを折りたたむ機能を削除
     }
   }
 
