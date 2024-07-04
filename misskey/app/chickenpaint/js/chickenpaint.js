@@ -124,7 +124,7 @@ function checkBrowserSupport() {
   return true;
 }
 function isSmallScreen() {
-  return window.innerWidth <= 820 || window.innerHeight <= 768;
+  return navigator.maxTouchPoints && navigator.maxTouchPoints > 2 && (window.screen.width <= 820 || window.screen.height <= 820);
 }
 function createDrawingTools() {
   var tools = new Array(ChickenPaint.T_MAX);
@@ -19306,7 +19306,7 @@ function CPCanvas(controller) {
     }
   };
   CPFreehandMode.prototype.mouseDrag = function (e, pressure) {
-    if (!navigator.maxTouchPoints || navigator.maxTouchPoints < 2) {
+    if (!navigator.maxTouchPoints || navigator.maxTouchPoints < 3) {
       //タッチデバイスでは無い時に
       CPDrawingMode.prototype.mouseMove.call(this, e, pressure); //円カーソルをmouseDrag時に表示
     }
@@ -23528,8 +23528,8 @@ function CPMainGUI(controller, uiElem) {
   };
   this.resize = function () {
     var newHeight;
-    var windowHeight = (0, _jquery.default)(window).height(),
-      menuBarHeight = (0, _jquery.default)(menuBar.getElement()).outerHeight();
+    var windowHeight = window.innerHeight,
+      menuBarHeight = menuBar.getElement().getBoundingClientRect().height;
     if (fullScreenMode) {
       newHeight = windowHeight - menuBarHeight;
     } else {
