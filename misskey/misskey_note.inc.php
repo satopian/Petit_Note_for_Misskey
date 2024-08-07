@@ -44,7 +44,7 @@ class misskey_note{
 				fclose($fp);
 				list($uip,$uhost,,,$ucode,,$starttime,$postedtime,$uresto,$tool,$u_hide_animation) = explode("\t", rtrim($userdata)."\t\t\t");
 				if((!$ucode || ($ucode != $usercode)) && (!$uip || ($uip != $userip))){return error($en? 'Posting failed.':'投稿に失敗しました。');}
-				$tool= in_array($tool,['neo','chi','klecks','tegaki']) ? $tool : '???';
+				$tool= is_paint_tool_name($tool);
 				//描画時間を$userdataをもとに計算
 				if($starttime && is_numeric($starttime) && $postedtime && is_numeric($postedtime)){
 					$painttime=(int)$postedtime-(int)$starttime;

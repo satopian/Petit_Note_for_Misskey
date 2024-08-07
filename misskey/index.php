@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2023
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20240410';
+$petit_lot='lot.20240807';
 $lang = ($http_langs = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
@@ -51,6 +51,7 @@ $use_paintbbs_neo=isset($use_paintbbs_neo) ? $use_paintbbs_neo : true;
 $use_chickenpaint=isset($use_chickenpaint) ? $use_chickenpaint : true;
 $use_klecs=isset($use_klecs) ? $use_klecs : true;
 $use_tegaki=isset($use_tegaki) ? $use_tegaki : true;
+$use_axnos=isset($use_axnos) ? $use_axnos : true;
 $display_link_back_to_home = isset($display_link_back_to_home) ? $display_link_back_to_home : true;
 $pmin_w = isset($pmin_w) ? $pmin_w : 300;//幅
 $pmin_h = isset($pmin_h) ? $pmin_h : 300;//高さ
@@ -140,6 +141,7 @@ function paint(){
 	$mode = (string)filter_input(INPUT_POST, 'mode');
 
 	$imgfile='';
+	$oekaki_id='';
 	$pchfile='';
 	$img_chi='';
 	$img_klecks='';
@@ -286,6 +288,12 @@ function paint(){
 			$templete='paint_tegaki.html';
 			return include __DIR__.'/'.$skindir.$templete;
 
+		case 'axnos':
+
+				$tool ='axnos';
+				$templete='paint_axnos.html';
+				return include __DIR__.'/'.$skindir.$templete;
+
 		case 'klecks':
 
 			$tool ='klecks';
@@ -422,7 +430,7 @@ function defaultview(){
 
 		global $use_aikotoba,$home,$skindir,$descriptions,$root_url;
 		global $en,$mark_sensitive_image,$petit_lot,$boardname,$pmax_w,$pmax_h; 
-		global $use_paintbbs_neo,$use_chickenpaint,$use_klecs,$use_tegaki,$display_link_back_to_home;
+		global $use_paintbbs_neo,$use_chickenpaint,$use_klecs,$use_tegaki,$use_axnos,$display_link_back_to_home;
 	
 		aikotoba_required_to_view();
 	

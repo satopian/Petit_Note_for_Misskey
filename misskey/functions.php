@@ -300,6 +300,9 @@ function switch_tool($tool){
 		case 'tegaki';
 			$tool='Tegaki';
 			break;
+		case 'axnos';
+			$tool='Axnos Paint';
+			break;
 		case 'upload':
 			$tool=$en?'Upload':'アップロード';
 			break;
@@ -453,6 +456,11 @@ function auto_link($str){
 		$str= preg_replace("{(https?://[\w!\?/\+\-_~=;\.,\*&@#\$%\(\)'\[\]]+)}",'<a href="$1" target="_blank" rel="nofollow noopener noreferrer">$1</a>',$str);
 	}
 	return $str;
+}
+
+//設定済みのペイントツール名かどうか調べる
+function is_paint_tool_name($tool){
+	return in_array($tool,['neo','chi','klecks','tegaki','axnos']) ? $tool : '???';
 }
 
 //mime typeを取得して拡張子を返す
@@ -1071,7 +1079,7 @@ function get_pch_size($src) {
 
 //使用するペイントアプリの配列化
 function app_to_use(){
-	global $use_paintbbs_neo,$use_chickenpaint,$use_klecs,$use_tegaki;
+	global $use_paintbbs_neo,$use_chickenpaint,$use_klecs,$use_tegaki,$use_axnos;
 		$arr_apps=[];
 		if($use_paintbbs_neo){
 			$arr_apps[]='neo';
@@ -1084,6 +1092,9 @@ function app_to_use(){
 		}
 		if($use_tegaki){
 			$arr_apps[]='tegaki';
+		}
+		if($use_axnos){
+			$arr_apps[]='axnos';
 		}
 		return $arr_apps;
 	}
