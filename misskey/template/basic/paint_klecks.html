@@ -19,7 +19,7 @@
 	<script>
 		//ブラウザデフォルトのキー操作をキャンセル
 		document.addEventListener("keydown",(e)=>{
-			const keys = ["+", ";", "=","-","s","h","r"];
+			const keys = ["+",";","=","-","s","h","r","o"];
 			if ((e.ctrlKey||e.metaKey) && keys.includes(e.key.toLowerCase())) {
 				// console.log("e.key",e.key);
 				e.preventDefault();
@@ -76,7 +76,7 @@
 
 			setTimeout(() => {
 			onSuccess();
-			//Petit Note 2021-2023 (c)satopian MIT Licence
+			//Petit Note 2021-2024 (c)satopian MIT Licence
 			//この箇所はさとぴあが作成したMIT Licenceのコードです。
 			const postData = (path, data) => {
 					fetch(path, {
@@ -114,7 +114,7 @@
 					})
 				}
 				klecks.getPSD().then((psd)=>{
-					var formData = new FormData();
+					const formData = new FormData();
 					formData.append("picture", klecks.getPNG(),'blob');
 					// formData.append("psd", psd,'blob');
 					formData.append("usercode", "<?=h($usercode)?>");
