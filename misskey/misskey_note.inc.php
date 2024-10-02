@@ -2,12 +2,13 @@
 //Petit Note 2021-2023 (c)satopian MIT LICENCE
 //https://paintbbs.sakura.ne.jp/
 //APIを使ってお絵かき掲示板からMisskeyにノート
-$misskey_note_ver=20231216;
+$misskey_note_ver=20240510;
 class misskey_note{
 
 	//Misskeyに投稿するSESSIONデータを作成
 	public static function create_misskey_note_sessiondata(){
-		global $en,$usercode,$root_url,$skindir,$boardname,$petit_lot;
+		global $en,$usercode,$root_url,$skindir,$petit_lot,$misskey_servers,$boardname;
+
 		check_csrf_token();
 	
 			$userip =t(get_uip());
@@ -82,7 +83,8 @@ class misskey_note{
 				["sushi.ski","https://sushi.ski"],
 				["misskey.delmulin.com","https://misskey.delmulin.com"],
 				["side.misskey.productions","https://side.misskey.productions"],
-			
+				["mk.shrimpia.network","https://mk.shrimpia.network"],
+						
 			];
 			$misskey_servers[]=[($en?"Direct input":"直接入力"),"direct"];//直接入力の箇所はそのまま。
 
@@ -96,6 +98,7 @@ class misskey_note{
 		}
 	public static function create_misskey_authrequesturl(){
 		global $root_url,$en,$petit_lot;
+		check_same_origin();
 
 		$misskey_server_radio=(string)filter_input(INPUT_POST,"misskey_server_radio",FILTER_VALIDATE_URL);
 		$misskey_server_radio_for_cookie=(string)filter_input(INPUT_POST,"misskey_server_radio");//directを判定するためurlでバリデーションしていない
@@ -105,7 +108,7 @@ class misskey_note{
 		setcookie("misskey_server_direct_input_cookie",$misskey_server_direct_input, time()+(86400*30),"","",false,true);
 		$share_url='';
 
-		if(!$misskey_server_radio&&!$misskey_server_direct_input){
+		if(!$misskey_server_radio && !$misskey_server_direct_input){
 			error($en ? "Please select an misskey server.":"Misskeyサーバを選択してください。");
 		}
 
@@ -120,9 +123,16 @@ class misskey_note{
 		$sns_api_session_id=hash('sha256', $sns_api_session_id);
 
 		$_SESSION['sns_api_session_id']=$sns_api_session_id;
-		$_SESSION['misskey_server_radio']=$misskey_server_radio;
 
 		$encoded_root_url = urlencode($root_url);
+
+		//別のサーバを選択した時はトークンをクリア
+		if(!isset($_SESSION['misskey_server_radio']) ||
+		$_SESSION['misskey_server_radio']!==$misskey_server_radio){
+			unset($_SESSION['accessToken']);//トークンをクリア
+		}
+		//投稿完了画面に表示するサーバのURl
+		$_SESSION['misskey_server_radio']=$misskey_server_radio;
 
 		if(isset($_SESSION['accessToken'])){
 
@@ -146,6 +156,7 @@ class misskey_note{
 			// HTTPステータスコードが403の時は、トークン不一致と判断しアプリを認証
 			if ($postStatusCode === 403) {
 				$Location = "{$misskey_server_radio}/miauth/{$sns_api_session_id}?name=Petit%20Note&callback={$encoded_root_url}connect_misskey_api.php&permission=write:notes,write:drive";
+				unset($_SESSION['accessToken']);//トークンをクリア
 			} else {
 				$Location = "{$root_url}connect_misskey_api.php?noauth=on&s_id={$sns_api_session_id}";
 			}
@@ -157,7 +168,6 @@ class misskey_note{
 		return header('Location:'.$Location);
 
 	}
-
 	// Misskeyへの投稿が成功した事を知らせる画面
 	public static function misskey_success(){
 		global $en,$skindir,$boardname;
