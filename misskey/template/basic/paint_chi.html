@@ -1,6 +1,5 @@
-
 <!DOCTYPE html>
-<html lang="ja">
+<html>
 <head>
 <meta charset="utf-8">
 <meta name="robots" content="noindex,follow">
@@ -15,7 +14,6 @@
 user-select: none;
 }
 </style>
-
 <script>
 	document.addEventListener('DOMContentLoaded',()=>{
 		document.addEventListener('dblclick', (e)=>{ e.preventDefault()}, { passive: false });
@@ -33,21 +31,22 @@ user-select: none;
 <div id="chickenpaint-parent"></div>
 <script>
 document.addEventListener("DOMContentLoaded", ()=>{
-new ChickenPaint({
-uiElem: document.getElementById("chickenpaint-parent"),
-canvasWidth: <?=h($picw)?>,
-canvasHeight: <?=h($pich)?>,
-<?php if($imgfile):?>loadImageUrl: "<?=h($imgfile)?>",<?php endif;?>
-<?php if($img_chi):?>loadChibiFileUrl: "<?=h($img_chi)?>",<?php endif;?>
+	new ChickenPaint({
+	uiElem: document.getElementById("chickenpaint-parent"),
+	canvasWidth: <?=h($picw)?>,
+	canvasHeight: <?=h($pich)?>,
+	<?php if($imgfile):?>loadImageUrl: "<?=h($imgfile)?>",<?php endif;?>
+	<?php if($img_chi):?>loadChibiFileUrl: "<?=h($img_chi)?>",<?php endif;?>
 
-saveUrl: "./?mode=saveimage&usercode=<?=h($usercode)?>&stime=<?=time();?>&tool=chi<?php if($resto):?>&resto=<?=h($resto)?><?php endif;?><?php if($rep):?>&repcode=<?=h($repcode)?><?php endif;?>",
-postUrl: "./?mode=<?=h($paintmode)?><?php if($rep):?>&no=<?=h($no)?>&id=<?=h($id)?>&pwd=<?=h($pwd)?>&repcode=<?=h($repcode)?><?php endif;?>",
-exitUrl: "./",
-allowDownload: true,
-resourcesRoot: "./app/chickenpaint/",
-disableBootstrapAPI: true,
-fullScreenMode: "force"
-});
+	saveUrl: "./?mode=saveimage&stime=<?=time();?>&tool=chi<?php if($resto):?>&resto=<?=h($resto)?><?php endif;?><?php if($rep):?>&repcode=<?=h($repcode)?><?php endif;?>",
+	postUrl: "./?mode=<?=h($paintmode)?><?php if($rep):?>&no=<?=h($no)?>&id=<?=h($id)?>&pwd=<?=h($pwd)?>&repcode=<?=h($repcode)?><?php endif;?>",
+	exitUrl: "./",
+	allowDownload: true,
+	resourcesRoot: "./app/chickenpaint/",
+	disableBootstrapAPI: true,
+	fullScreenMode: "force",
+	post_max_size: <?=h($max_pch)?>
+	});
 })
 </script>
 </body>

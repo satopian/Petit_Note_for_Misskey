@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2023
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20240807';
+$petit_lot='lot.20241106';
 $lang = ($http_langs = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
@@ -273,6 +273,11 @@ function paint(){
 	$parameter_day = date("Ymd");//JavaScriptのキャッシュ制御
 
 	$admin_pass= null;
+
+	$max_pch=0;
+	if (function_exists('ini_get')){
+		$max_pch = min((int)ini_get('post_max_size'),(int)ini_get('upload_max_filesize'));
+	} 
 
 	switch($app){
 		case 'chi'://ChickenPaint
