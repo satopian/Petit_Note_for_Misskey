@@ -1,8 +1,8 @@
 <?php
-//Petit Note 2021-2023 (c)satopian MIT LICENCE
+//Petit Note 2021-2024 (c)satopian MIT LICENCE
 //https://paintbbs.sakura.ne.jp/
 //APIを使ってお絵かき掲示板からMisskeyにノート
-$misskey_note_ver=20240510;
+$misskey_note_ver=20241118;
 class misskey_note{
 
 	//Misskeyに投稿するSESSIONデータを作成
@@ -118,7 +118,7 @@ class misskey_note{
 
 		session_sta();
 		// セッションIDとユニークIDを結合
-		$sns_api_session_id = session_id() . uniqid() . mt_rand();
+		$sns_api_session_id = session_id() . random_bytes(16);
 		// SHA256ハッシュ化
 		$sns_api_session_id=hash('sha256', $sns_api_session_id);
 
