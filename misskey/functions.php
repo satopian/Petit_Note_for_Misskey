@@ -70,7 +70,7 @@ function aikotoba_required_to_view($required_flag=false){
 	if(!aikotoba_valid()){
 		$templete='aikotoba.html';
 		include __DIR__.'/'.$skindir.$templete;
-		exit;//return include では処理が止まらない。 
+		exit();//return include では処理が止まらない。 
 	}
 }
 
@@ -568,7 +568,7 @@ function error($str){
 
 	$templete='error.html';
 	include __DIR__.'/template/basic/'.$templete;
-	exit;
+	exit();
 }
 //csrfトークンを作成
 function get_csrf_token(){
@@ -650,7 +650,7 @@ function check_AsyncRequest($upfile='') {
 	$http_x_requested_with= (bool)(isset($_SERVER['HTTP_X_REQUESTED_WITH']));
 	if($http_x_requested_with || $asyncflag){//非同期通信ならエラーチェックだけすませて処理中断。通常フォームでやりなおし。
 		safe_unlink($upfile);
-		exit;
+		exit();
 	}
 }
 
