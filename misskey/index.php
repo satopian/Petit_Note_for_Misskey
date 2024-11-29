@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2023
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20241118';
+$petit_lot='lot.20241130';
 $lang = ($http_langs = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
@@ -67,7 +67,7 @@ session_sta();
 $session_usercode = isset($_SESSION['usercode']) ? t((string)$_SESSION['usercode']) : "";
 $usercode = $usercode ? $usercode : $session_usercode;
 if(!$usercode){//user-codeがなければ発行
-	$usercode = substr(hash('sha256', $userip.random_bytes(16)), 0, 32);
+	$usercode = hash('sha256', $userip.random_bytes(16));
 }
 setcookie("usercode", $usercode, time()+(86400*365),"","",false,true);//1年間
 $_SESSION['usercode']=$usercode;
@@ -259,7 +259,7 @@ function paint(){
 			$userip = get_uip();
 			$paintmode='picrep';
 			$id=$time;	//テンプレートでも使用。
-			$repcode = substr(hash('sha256', $no.$id.$userip.$pwd.random_bytes(16)), 0, 32);
+			$repcode = $no.'-'.$id.'-'.hash('sha256', $userip.random_bytes(16));
 		}
 	}
 
