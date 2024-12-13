@@ -15,6 +15,7 @@ webp/
 temp/
 tmp/
 cache/
+errorlog/
 
 # Composer
 /vendor
