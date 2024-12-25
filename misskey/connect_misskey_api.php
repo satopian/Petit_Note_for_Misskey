@@ -1,5 +1,5 @@
 <?php
-//Petit Note 2021-2023 (c)satopian MIT LICENCE
+//Petit Note 2021-2024 (c)satopian MIT LICENCE
 //https://paintbbs.sakura.ne.jp/
 
 require_once(__DIR__.'/functions.php');
@@ -12,20 +12,20 @@ $skindir='template/basic';
 session_sta();
 
 if((!isset($_SESSION['sns_api_session_id']))||(!isset($_SESSION['sns_api_val']))){
-	return header( "Location: ./ ") ;
+	redirect("./") ;
 };
 $baseUrl = isset($_SESSION['misskey_server_radio']) ? $_SESSION['misskey_server_radio'] : "";
 if(!filter_var($baseUrl,FILTER_VALIDATE_URL)){
-	return error($en ? "This is not a valid server URL.":"サーバのURLが無効です。");
+	error($en ? "This is not a valid server URL.":"サーバのURLが無効です。");
 }
 
 $noauth = (bool)filter_input(INPUT_GET,'noauth',FILTER_VALIDATE_BOOLEAN);
 if($noauth){
 	if((string)filter_input(INPUT_GET,'s_id') !== $_SESSION['sns_api_session_id']){
 
-		return error($en ? "Operation failed." :"失敗しました。" ,false);	
+		error($en ? "Operation failed." :"失敗しました。" ,false);
 	}
-	return connect_misskey_api::create_misskey_note();
+	connect_misskey_api::create_misskey_note();
 }
 
 connect_misskey_api::miauth_check();
@@ -33,7 +33,7 @@ connect_misskey_api::miauth_check();
 // 認証チェック
 class connect_misskey_api{
 
-	public static function miauth_check(){
+	public static function miauth_check(): void {
 		global $en,$baseUrl,$skindir,$boardname;
 		$sns_api_session_id = $_SESSION['sns_api_session_id'];
 		$checkUrl = $baseUrl . "/api/miauth/{$sns_api_session_id}/check";
@@ -49,20 +49,20 @@ class connect_misskey_api{
 		curl_close($checkCurl);
 		
 		if (!$checkResponse) {
-			return error($en ? "Authentication failed." :"認証に失敗しました。");	
+			error($en ? "Authentication failed." :"認証に失敗しました。");	
 		}
 		
 		$responseData = json_decode($checkResponse, true);
 		if(!isset($responseData['token'])){
-			return error($en ? "Authentication failed." :"認証に失敗しました。");
+			error($en ? "Authentication failed." :"認証に失敗しました。");
 		}
 		$accessToken = $responseData['token'];
 		$_SESSION['accessToken']=$accessToken;
 		$user = $responseData['user'];
-		return	self::create_misskey_note();
+		self::create_misskey_note();
 		}
 
-	public static function create_misskey_note(){
+	public static function create_misskey_note(): void {
 			
 			global $en,$baseUrl,$root_url,$skindir,$boardname;
 			
@@ -74,10 +74,10 @@ class connect_misskey_api{
 			$imagePath = __DIR__.'/temp/'.$picfile;
 
 			if(!is_file($imagePath)){
-			return error($en ? "Image does not exist." : "画像がありません。" ,false);
+			error($en ? "Image does not exist." : "画像がありません。" ,false);
 		};
 		if(!get_image_type($imagePath)) {
-			return error($en? "This file is an unsupported format.":"対応していないファイル形式です。" ,false);
+			error($en? "This file is an unsupported format.":"対応していないファイル形式です。" ,false);
 		}
 
 		$uploadUrl = $baseUrl . "/api/drive/files/create";
@@ -102,7 +102,7 @@ class connect_misskey_api{
 		// var_dump($uploadResponse);
 		if (!$uploadResponse) {
 			// var_dump($uploadResponse);
-			return error($en ? "Failed to upload the image." : "画像のアップロードに失敗しました。" );
+			error($en ? "Failed to upload the image." : "画像のアップロードに失敗しました。" );
 		}
 
 		// アップロードしたファイルのIDを取得
@@ -112,7 +112,7 @@ class connect_misskey_api{
 
 		if(!$fileId){
 			// var_dump($responseData);
-			return error($en ? "Failed to upload the image." : "画像のアップロードに失敗しました。" );
+			error($en ? "Failed to upload the image." : "画像のアップロードに失敗しました。" );
 		}
 
 		// ファイルの更新
@@ -145,7 +145,7 @@ class connect_misskey_api{
 
 		$uploadResult = json_decode($uploadResponse, true);
 		if (!$fileId) {
-			return error($en ? "Failed to post the content." : "投稿に失敗しました。" ,false);
+			error($en ? "Failed to post the content." : "投稿に失敗しました。" ,false);
 		}
 			
 		sleep(10);
@@ -190,14 +190,10 @@ class connect_misskey_api{
 				$pchext = check_pch_ext(__DIR__.'/temp/'.$picfile_name,['upload'=>true]);
 				safe_unlink(__DIR__.'/temp/'.$picfile_name.$pchext);		
 				// var_dump($uploadResponse,$postResponse,$uploadResult,$postResult);
-				// return header('Location: '.$baseUrl);
 				unset($_SESSION['sns_api_session_id']);
 				unset($_SESSION['sns_api_val']);
 
-				return header('Location: ./?mode=misskey_success');
-
-				// $templete='success.html';
-				// return include __DIR__.'/template/basic/'.$templete;
+				redirect('./?mode=misskey_success');
 
 		} 
 		else {

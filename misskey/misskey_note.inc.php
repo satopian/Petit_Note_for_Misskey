@@ -22,7 +22,7 @@ class misskey_note{
 			$cw = t((string)filter_input(INPUT_POST,'cw'));
 
 			if($hide_content && !$cw){
-				return error($en?"Content warning field is empty.":"注釈がありません。");
+				error($en?"Content warning field is empty.":"注釈がありません。");
 			}
 			check_AsyncRequest();//Asyncリクエストの時は処理を中断
 
@@ -37,14 +37,14 @@ class misskey_note{
 				$picfile=pathinfo($picfile, PATHINFO_FILENAME );//拡張子除去
 				//選択された絵が投稿者の絵か再チェック
 				if (!$picfile || !is_file(TEMP_DIR.$picfile.".dat") || !is_file($tempfile)||!get_image_type($tempfile)) {
-					return error($en? 'Posting failed.':'投稿に失敗しました。');
+					error($en? 'Posting failed.':'投稿に失敗しました。');
 				}
 				//ユーザーデータから情報を取り出す
 				$fp = fopen(TEMP_DIR.$picfile.".dat", "r");
 				$userdata = fread($fp, 1024);
 				fclose($fp);
 				list($uip,$uhost,,,$ucode,,$starttime,$postedtime,$uresto,$tool,$u_hide_animation) = explode("\t", rtrim($userdata)."\t\t\t");
-				if((!$ucode || ($ucode != $usercode)) && (!$uip || ($uip != $userip))){return error($en? 'Posting failed.':'投稿に失敗しました。');}
+				if((!$ucode || ($ucode != $usercode)) && (!$uip || ($uip != $userip))){error($en? 'Posting failed.':'投稿に失敗しました。');}
 				$tool= is_paint_tool_name($tool);
 				//描画時間を$userdataをもとに計算
 				if($starttime && is_numeric($starttime) && $postedtime && is_numeric($postedtime)){
@@ -94,7 +94,8 @@ class misskey_note{
 			$admin_pass= null;
 			// HTML出力
 			$templete='post2misskey.html';
-			return include __DIR__.'/'.$skindir.$templete;
+			include __DIR__.'/'.$skindir.$templete;
+			exit();
 		}
 	public static function create_misskey_authrequesturl(){
 		global $root_url,$en,$petit_lot;
@@ -165,8 +166,7 @@ class misskey_note{
 			$Location = "{$misskey_server_radio}/miauth/{$sns_api_session_id}?name=Petit%20Note&callback={$encoded_root_url}connect_misskey_api.php&permission=write:notes,write:drive";
 
 		}
-		return header('Location:'.$Location);
-
+		redirect($Location);
 	}
 	// Misskeyへの投稿が成功した事を知らせる画面
 	public static function misskey_success(){
@@ -175,10 +175,11 @@ class misskey_note{
 		session_sta();
 		$misskey_server_url = isset($_SESSION['misskey_server_radio']) ? $_SESSION['misskey_server_radio'] : "";
 		if(!$misskey_server_url || !filter_var($misskey_server_url,FILTER_VALIDATE_URL)){
-			return header('Location: ./');
+			redirect('./');
 		}
 		$templete='success.html';
-		return include $skindir.$templete;
+		include $skindir.$templete;
+		exit();
 	}
 }
 

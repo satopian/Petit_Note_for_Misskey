@@ -2,32 +2,32 @@
 //Petit Note (c)さとぴあ @satopian 2021-2023
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20241130';
+$petit_lot='lot.20241225';
 $lang = ($http_langs = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
 
-if (version_compare(PHP_VERSION, '5.6.0', '<')) {
-	die($en? "Error. PHP version 5.6.0 or higher is required for this program to work. <br>\n(Current PHP version:".PHP_VERSION.")":
-		"エラー。本プログラムの動作には PHPバージョン 5.6.0 以上が必要です。<br>\n(現在のPHPバージョン：".PHP_VERSION.")"
+if (version_compare(PHP_VERSION, '7.1.0', '<')) {
+	die($en? "Error. PHP version 7.1.0 or higher is required for this program to work. <br>\n(Current PHP version:".PHP_VERSION.")":
+		"エラー。本プログラムの動作には PHPバージョン 7.1.0 以上が必要です。<br>\n(現在のPHPバージョン：".PHP_VERSION.")"
 	);
 }
 if(!is_file(__DIR__.'/functions.php')){
-	return die(__DIR__.'/functions.php'.($en ? ' does not exist.':'がありません。'));
+	die(__DIR__.'/functions.php'.($en ? ' does not exist.':'がありません。'));
 }
 require_once(__DIR__.'/functions.php');
 if(!isset($functions_ver)||$functions_ver<20231219){
-	return die($en?'Please update functions.php to the latest version.':'functions.phpを最新版に更新してください。');
+	die($en?'Please update functions.php to the latest version.':'functions.phpを最新版に更新してください。');
 }
 check_file(__DIR__.'/misskey_note.inc.php');
 require_once(__DIR__.'/misskey_note.inc.php');
 if(!isset($misskey_note_ver)||$misskey_note_ver<20231216){
-	return die($en?'Please update misskey_note.inc.php to the latest version.':'misskey_note.inc.phpを最新版に更新してください。');
+	die($en?'Please update misskey_note.inc.php to the latest version.':'misskey_note.inc.phpを最新版に更新してください。');
 }
 check_file(__DIR__.'/save.inc.php');
 require_once(__DIR__.'/save.inc.php');
 if(!isset($save_inc_ver)||$save_inc_ver<20231219){
-	return die($en?'Please update save.inc.php to the latest version.':'save.inc.phpを最新版に更新してください。');
+	die($en?'Please update save.inc.php to the latest version.':'save.inc.phpを最新版に更新してください。');
 }
 // jQueryバージョン
 const JQUERY='jquery-3.7.0.min.js';
@@ -40,7 +40,7 @@ require_once(__DIR__.'/config.php');
 $skindir='template/'.$skindir;
 
 if(!isset($admin_pass)||!$admin_pass){
-	return error($en?'The administrator password has not been set.':'管理者パスワードが設定されていません。');
+	error($en?'The administrator password has not been set.':'管理者パスワードが設定されていません。');
 }
 $max_com= isset($max_com) ? $max_com : 1000;
 $deny_all_posts= isset($deny_all_posts) ? $deny_all_posts : (isset($denny_all_posts) ? $denny_all_posts : false);
@@ -109,7 +109,7 @@ switch($mode){
 }
 
 //お絵かき画面
-function paint(){
+function paint(): void {
 
 	global $boardname,$skindir,$pmax_w,$pmax_h,$pmin_w,$pmin_h,$en;
 	global $usercode,$petit_lot;
@@ -121,7 +121,7 @@ function paint(){
 	$pich = (int)filter_input(INPUT_POST,'pich',FILTER_VALIDATE_INT);
 	$resto = t((string)filter_input(INPUT_POST, 'resto',FILTER_VALIDATE_INT));
 	if(strlen($resto)>1000){
-		return error($en?'Unknown error':'問題が発生しました。');
+		error($en?'Unknown error':'問題が発生しました。');
 	}
 	if(!$usercode){
 		error($en? 'User code does not exist.' :'ユーザーコードがありません。');
@@ -158,7 +158,7 @@ function paint(){
 		$pchtmp=isset($_FILES['pchup']['tmp_name']) ? $_FILES['pchup']['tmp_name'] : '';
 
 		if(isset($_FILES['pchup']['error']) && in_array($_FILES['pchup']['error'],[1,2])){//容量オーバー
-			return error($en? 'The file size is too big.':'ファイルサイズが大きすぎます。');
+			error($en? 'The file size is too big.':'ファイルサイズが大きすぎます。');
 		} 
 
 		if ($pchtmp && $_FILES['pchup']['error'] === UPLOAD_ERR_OK){
@@ -168,14 +168,14 @@ function paint(){
 			$pchext=strtolower($pchext);//すべて小文字に
 			//拡張子チェック
 			if (!in_array($pchext, ['pch','chi','psd'])) {
-				return error($en?'This file does not supported by the ability to load uploaded files onto the canvas.Supported formats are pch and chi.':'アップロードペイントで使用できるファイルはpch、chi、psdです。');
+				error($en?'This file does not supported by the ability to load uploaded files onto the canvas.Supported formats are pch and chi.':'アップロードペイントで使用できるファイルはpch、chi、psdです。');
 			}
 			$pchup = TEMP_DIR.'pchup-'.$time.'-tmp.'.$pchext;//アップロードされるファイル名
 
 			$move_uploaded = move_uploaded_file($pchtmp, $pchup);
 			if(!$move_uploaded){//アップロードは成功した?
 				safe_unlink($pchtmp);
-				return error($en?'This operation has failed.':'失敗しました。');
+				error($en?'This operation has failed.':'失敗しました。');
 			
 			}
 			$basename_pchup=basename($pchup);
@@ -202,7 +202,7 @@ function paint(){
 					$anime = false;
 				}else{
 					safe_unlink($pchup);
-					return error($en? 'This file is an unsupported format.':'対応していないファイル形式です。');
+					error($en? 'This file is an unsupported format.':'対応していないファイル形式です。');
 			}
 		}
 	}
@@ -223,7 +223,7 @@ function paint(){
 			}
 		}
 		if(!is_file(IMG_DIR.$imgfile)){
-			return error($en? 'The article does not exist.':'記事がありません。');
+			error($en? 'The article does not exist.':'記事がありません。');
 		}
 		list($picw,$pich)=getimagesize(IMG_DIR.$imgfile);//キャンバスサイズ
 
@@ -250,7 +250,7 @@ function paint(){
 			$rep=true;
 			$pwd = t((string)filter_input(INPUT_POST, 'pwd'));
 			$pwd=$pwd ? $pwd : t((string)filter_input(INPUT_COOKIE,'pwdc'));//未入力ならCookieのパスワード
-			if(strlen($pwd) > 100) return error($en? 'Password is too long.':'パスワードが長すぎます。');
+			if(strlen($pwd) > 100) error($en? 'Password is too long.':'パスワードが長すぎます。');
 			if($pwd){
 				$pwd=basename($pwd);
 				$pwd=openssl_encrypt ($pwd,CRYPT_METHOD, CRYPT_PASS, true, CRYPT_IV);//暗号化
@@ -280,25 +280,29 @@ function paint(){
 			$tool='chi';
 			// HTML出力
 			$templete='paint_chi.html';
-			return include __DIR__.'/'.$skindir.$templete;
+			include __DIR__.'/'.$skindir.$templete;
+			exit();
 
 		case 'tegaki':
 
 			$tool ='tegaki';
 			$templete='paint_tegaki.html';
-			return include __DIR__.'/'.$skindir.$templete;
+			include __DIR__.'/'.$skindir.$templete;
+			exit();
 
 		case 'axnos':
 
 				$tool ='axnos';
 				$templete='paint_axnos.html';
-				return include __DIR__.'/'.$skindir.$templete;
+				include __DIR__.'/'.$skindir.$templete;
+				exit();
 
 		case 'klecks':
 
 			$tool ='klecks';
 			$templete='paint_klecks.html';
-			return include __DIR__.'/'.$skindir.$templete;
+			include __DIR__.'/'.$skindir.$templete;
+			exit();
 
 		case 'neo'://PaintBBS NEO
 
@@ -330,15 +334,16 @@ function paint(){
 			$admin_pass= null;
 			// HTML出力
 			$templete='paint_neo.html';
-			return include __DIR__.'/'.$skindir.$templete;
+			include __DIR__.'/'.$skindir.$templete;
+			exit();
 
 		default:
-			return error($en?'This operation has failed.':'失敗しました。');
+			error($en?'This operation has failed.':'失敗しました。');
 	}
 
 }
 // お絵かきコメント 
-function paintcom(){
+function paintcom(): void {
 	global $use_aikotoba,$boardname,$home,$skindir,$en,$mark_sensitive_image;
 	global $usercode,$petit_lot; 
 
@@ -398,10 +403,11 @@ function paintcom(){
 
 	// HTML出力
 	$templete='paint_com.html';
-	return include __DIR__.'/'.$skindir.$templete;
+	include __DIR__.'/'.$skindir.$templete;
+	exit();
 }
 
-function saveimage(){
+function saveimage(): void {
 	
 	$tool=filter_input(INPUT_GET,"tool");
 
@@ -426,7 +432,7 @@ function saveimage(){
 }
 
 
-function defaultview(){
+function defaultview(): void {
 
 		global $use_aikotoba,$home,$skindir,$descriptions,$root_url;
 		global $en,$mark_sensitive_image,$petit_lot,$boardname,$pmax_w,$pmax_h; 
@@ -460,5 +466,6 @@ function defaultview(){
 
 		// HTML出力
 		$templete='main.html';
-		return include __DIR__.'/'.$skindir.$templete;
+		include __DIR__.'/'.$skindir.$templete;
+		exit();
 }
