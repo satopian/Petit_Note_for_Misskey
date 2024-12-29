@@ -1,5 +1,5 @@
 <?php
-$functions_ver=20241225;
+$functions_ver=20241229;
 //編集モードログアウト
 function logout(): void {
 	$resno=(int)filter_input(INPUT_GET,'resno',FILTER_VALIDATE_INT);
@@ -262,7 +262,7 @@ function branch_destination_of_location(): void {
 function location_paintcom(): void {
 	redirect('./?mode=paintcom');
 }
-//非同期通信の時にpaintcom()を呼び出すためのリダイレクト
+//リダイレクト
 function redirect($url): void {
 	header("Location: {$url}");
 	exit();
