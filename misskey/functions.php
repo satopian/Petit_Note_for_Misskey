@@ -1,5 +1,5 @@
 <?php
-$functions_ver=20241229;
+$functions_ver=20250101;
 //編集モードログアウト
 function logout(): void {
 	$resno=(int)filter_input(INPUT_GET,'resno',FILTER_VALIDATE_INT);
@@ -52,6 +52,8 @@ function aikotoba(): void {
 function aikotoba_required_to_view($required_flag=false): void {
 
 	global $use_aikotoba,$aikotoba_required_to_view,$skindir,$en,$petit_lot,$boardname;
+	//先に年齢確認を行う
+	age_check_required_to_view();
 
 	$required_flag=($use_aikotoba && $required_flag);
 
@@ -59,12 +61,46 @@ function aikotoba_required_to_view($required_flag=false): void {
 	return;
 	}
 
+	//古いテンプレート用
 	$page=(int)filter_input(INPUT_GET,'page',FILTER_VALIDATE_INT);
 	$resno=(int)filter_input(INPUT_GET,'resno',FILTER_VALIDATE_INT);
+
 	$admin_pass= null;
 
 	if(!aikotoba_valid()){
 		$templete='aikotoba.html';
+		include __DIR__.'/'.$skindir.$templete;
+		exit();//return include では処理が止まらない。 
+	}
+}
+
+// 年齢確認ボタン押下でCookieを発行
+function age_check(): void {
+
+	check_same_origin();
+
+	$agecheck_passed = (bool)filter_input(INPUT_POST,'agecheck_passed',FILTER_VALIDATE_BOOLEAN);
+	if($agecheck_passed){
+		setcookie("p_n_agecheck_passed","1", time()+(86400*30),"","",false,true);//1ヶ月
+	}
+	// 処理が終了したらJavaScriptでリロード
+}
+//記事の表示に年齢確認を必須にする
+function age_check_required_to_view(): void {
+	global $underage_submit_url;
+	global $age_check_required_to_view,$skindir,$en,$petit_lot,$boardname;
+	$age_check_required_to_view = $age_check_required_to_view ?? false;
+	$underage_submit_url = $underage_submit_url ?? 'https://www.google.com/';
+
+	if(!$age_check_required_to_view){
+		setcookie("p_n_agecheck_passed","0", time()+(86400*30),"","",false,true);//1ヶ月
+	return;
+	}
+
+	$admin_pass= null;
+	$agecheck_passed = (bool)filter_input(INPUT_COOKIE,'p_n_agecheck_passed');
+	if(!$agecheck_passed){
+		$templete='age_check.html';
 		include __DIR__.'/'.$skindir.$templete;
 		exit();//return include では処理が止まらない。 
 	}
@@ -308,7 +344,7 @@ function is_paint_tool_name($tool): string {
 
 //ログ出力の前処理 行から情報を取り出す
 function create_res($line,$options=[]): array {
-	global $root_url,$boardname,$do_not_change_posts_time,$en,$mark_sensitive_image;
+	global $root_url,$boardname,$do_not_change_posts_time,$en,$mark_sensitive_image,$set_all_images_to_nsfw;
 	list($no,$sub,$name,$verified,$com,$url,$imgfile,$w,$h,$thumbnail,$paintsec,$log_hash_img,$abbr_toolname,$pchext,$time,$first_posted_time,$host,$userid,$hash,$oya)=$line;
 
 	$time = basename($time);
@@ -328,6 +364,7 @@ function create_res($line,$options=[]): array {
 
 	$anime = in_array($pchext,['.pch','.tgkr']); 
 	$hide_thumbnail = $mark_sensitive_image ? (strpos($thumbnail,'hide_')!==false) :'';
+	$hide_thumbnail = $set_all_images_to_nsfw ? $set_all_images_to_nsfw : $hide_thumbnail;
 
 	$_w=$w;
 	$_h=$h;
@@ -1228,10 +1265,10 @@ function time_left_to_close_the_thread ($postedtime): string {
 	calc_remaining_time_to_close_thread($timeleft) : '';
 }	
 // マイクロ秒を秒に戻す
-function microtime2time($microtime): string {
+function microtime2time($microtime): int {
 	$microtime=(string)$microtime;
 	$time=(strlen($microtime)>15) ? substr($microtime,0,-6) : substr($microtime,0,-3);
-	return $time;
+	return (int)$time;
 }
 
 //POSTされた値をログファイルに格納する書式にフォーマット
