@@ -102,7 +102,7 @@ switch($mode){
 		return misskey_note::misskey_success();
 	case 'saveimage':
 		return saveimage();
-		case '':
+	case '':
 		return defaultview();
 	default:
 		return defaultview();
