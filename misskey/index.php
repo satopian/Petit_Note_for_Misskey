@@ -1,8 +1,8 @@
 <?php
-//Petit Note (c)さとぴあ @satopian 2021-2023
+//Petit Note (c)さとぴあ @satopian 2021-2025
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20241225';
+$petit_lot='lot.20250114';
 $lang = ($http_langs = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
