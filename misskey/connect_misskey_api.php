@@ -1,5 +1,5 @@
 <?php
-//Petit Note 2021-2024 (c)satopian MIT LICENCE
+//Petit Note 2021-2025 (c)satopian MIT LICENCE
 //https://paintbbs.sakura.ne.jp/
 
 require_once(__DIR__.'/functions.php');
@@ -8,7 +8,7 @@ require_once(__DIR__.'/config.php');
 $lang = ($http_langs = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
-$skindir='template/basic';
+$skindir='template/basic/';
 session_sta();
 
 if((!isset($_SESSION['sns_api_session_id']))||(!isset($_SESSION['sns_api_val']))){
