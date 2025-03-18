@@ -13,13 +13,13 @@ class misskey_note{
 	
 			$userip =t(get_uip());
 
-			$pictmp = (int)filter_input(INPUT_POST, 'pictmp',FILTER_VALIDATE_INT);
-			$com = t((string)filter_input(INPUT_POST,'com'));
-			$hide_thumbnail = (bool)filter_input(INPUT_POST,'hide_thumbnail',FILTER_VALIDATE_BOOLEAN);
-			$hide_content = (bool)filter_input(INPUT_POST,'hide_content',FILTER_VALIDATE_BOOLEAN);
-			$show_painttime = (bool)filter_input(INPUT_POST,'show_painttime',FILTER_VALIDATE_BOOLEAN);
-			$show_tag = (bool)filter_input(INPUT_POST,'show_tag',FILTER_VALIDATE_BOOLEAN);
-			$cw = t((string)filter_input(INPUT_POST,'cw'));
+			$pictmp = (int)filter_input_data('POST', 'pictmp',FILTER_VALIDATE_INT);
+			$com = t((string)filter_input_data('POST','com'));
+			$hide_thumbnail = (bool)filter_input_data('POST','hide_thumbnail',FILTER_VALIDATE_BOOLEAN);
+			$hide_content = (bool)filter_input_data('POST','hide_content',FILTER_VALIDATE_BOOLEAN);
+			$show_painttime = (bool)filter_input_data('POST','show_painttime',FILTER_VALIDATE_BOOLEAN);
+			$show_tag = (bool)filter_input_data('POST','show_tag',FILTER_VALIDATE_BOOLEAN);
+			$cw = t((string)filter_input_data('POST','cw'));
 
 			if($hide_content && !$cw){
 				error($en?"Content warning field is empty.":"注釈がありません。");
@@ -30,7 +30,7 @@ class misskey_note{
 
 			$pictmp2=false;
 			if($pictmp===2){//ユーザーデータを調べる
-				list($picfile,) = explode(",",(string)filter_input(INPUT_POST, 'picfile'));
+				list($picfile,) = explode(",",(string)filter_input_data('POST', 'picfile'));
 				$picfile_name=basename($picfile);
 				$tempfile = TEMP_DIR.$picfile;
 				$picfile=basename($picfile);
@@ -88,8 +88,8 @@ class misskey_note{
 			];
 			$misskey_servers[]=[($en?"Direct input":"直接入力"),"direct"];//直接入力の箇所はそのまま。
 
-			$misskey_server_radio_cookie=(string)filter_input(INPUT_COOKIE,"misskey_server_radio_cookie");
-			$misskey_server_direct_input_cookie=(string)filter_input(INPUT_COOKIE,"misskey_server_direct_input_cookie");
+			$misskey_server_radio_cookie=(string)filter_input_data('COOKIE',"misskey_server_radio_cookie");
+			$misskey_server_direct_input_cookie=(string)filter_input_data('COOKIE',"misskey_server_direct_input_cookie");
 
 			$admin_pass= null;
 			// HTML出力
@@ -101,10 +101,10 @@ class misskey_note{
 		global $root_url,$en,$petit_lot;
 		check_same_origin();
 
-		$misskey_server_radio=(string)filter_input(INPUT_POST,"misskey_server_radio",FILTER_VALIDATE_URL);
-		$misskey_server_radio_for_cookie=(string)filter_input(INPUT_POST,"misskey_server_radio");//directを判定するためurlでバリデーションしていない
+		$misskey_server_radio=(string)filter_input_data('POST',"misskey_server_radio",FILTER_VALIDATE_URL);
+		$misskey_server_radio_for_cookie=(string)filter_input_data('POST',"misskey_server_radio");//directを判定するためurlでバリデーションしていない
 		$misskey_server_radio_for_cookie=($misskey_server_radio_for_cookie === 'direct') ? 'direct' : $misskey_server_radio;
-		$misskey_server_direct_input=(string)filter_input(INPUT_POST,"misskey_server_direct_input",FILTER_VALIDATE_URL);
+		$misskey_server_direct_input=(string)filter_input_data('POST',"misskey_server_direct_input",FILTER_VALIDATE_URL);
 		setcookie("misskey_server_radio_cookie",$misskey_server_radio_for_cookie, time()+(86400*30),"","",false,true);
 		setcookie("misskey_server_direct_input_cookie",$misskey_server_direct_input, time()+(86400*30),"","",false,true);
 
@@ -170,7 +170,7 @@ class misskey_note{
 	// Misskeyへの投稿が成功した事を知らせる画面
 	public static function misskey_success(){
 		global $en,$skindir,$boardname;
-		$no = (string)filter_input(INPUT_GET, 'no',FILTER_VALIDATE_INT);
+		$no = (string)filter_input_data('GET', 'no',FILTER_VALIDATE_INT);
 		session_sta();
 		$misskey_server_url = $_SESSION['misskey_server_radio'] ?? "";
 		if(!$misskey_server_url || !filter_var($misskey_server_url,FILTER_VALIDATE_URL)){

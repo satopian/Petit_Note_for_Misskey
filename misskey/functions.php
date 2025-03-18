@@ -1,16 +1,16 @@
 <?php
-$functions_ver=20250101;
+$functions_ver=20250310;
 //編集モードログアウト
 function logout(): void {
-	$resno=(int)filter_input(INPUT_GET,'resno',FILTER_VALIDATE_INT);
+	$resno=(int)filter_input_data('GET','resno',FILTER_VALIDATE_INT);
 	session_sta();
 	unset($_SESSION['admindel']);
 	unset($_SESSION['userdel']);
 	if($resno){
 		redirect('./?resno='.$resno);
 	}
-	$page=(int)filter_input(INPUT_POST,'page',FILTER_VALIDATE_INT);
-	$page= $page ? $page : (int)filter_input(INPUT_GET,'page',FILTER_VALIDATE_INT);
+	$page=(int)filter_input_data('POST','page',FILTER_VALIDATE_INT);
+	$page= $page ? $page : (int)filter_input_data('GET','page',FILTER_VALIDATE_INT);
 
 	redirect('./?page='.$page);
 }
@@ -30,11 +30,11 @@ function aikotoba(): void {
 	check_same_origin();
 
 	session_sta();
-	if(!$aikotoba || $aikotoba!==(string)filter_input(INPUT_POST,'aikotoba')){
+	if(!$aikotoba || $aikotoba!==(string)filter_input_data('POST','aikotoba')){
 		if(isset($_SESSION['aikotoba'])){
 			unset($_SESSION['aikotoba']);
 		}
-		if((string)filter_input(INPUT_COOKIE,'aikotoba')){
+		if((string)filter_input_data('COOKIE','aikotoba')){
 			setcookie('aikotoba', '', time() - 3600);
 		} 
 		error($en?'The secret word is wrong':'合言葉が違います。');
@@ -52,6 +52,14 @@ function aikotoba(): void {
 function aikotoba_required_to_view($required_flag=false): void {
 
 	global $use_aikotoba,$aikotoba_required_to_view,$skindir,$en,$petit_lot,$boardname;
+
+	//不正な値チェック
+	$page=(int)filter_input_data('GET','page',FILTER_VALIDATE_INT);
+	$resno=(int)filter_input_data('GET','resno',FILTER_VALIDATE_INT);
+	if($page<0||$resno<0){//負の値の時はトップページにリダイレクト
+		redirect("./");
+	}
+
 	//先に年齢確認を行う
 	age_check_required_to_view();
 
@@ -60,10 +68,6 @@ function aikotoba_required_to_view($required_flag=false): void {
 	if(!$aikotoba_required_to_view && !$required_flag){
 	return;
 	}
-
-	//古いテンプレート用
-	$page=(int)filter_input(INPUT_GET,'page',FILTER_VALIDATE_INT);
-	$resno=(int)filter_input(INPUT_GET,'resno',FILTER_VALIDATE_INT);
 
 	$admin_pass= null;
 
@@ -79,7 +83,7 @@ function age_check(): void {
 
 	check_same_origin();
 
-	$agecheck_passed = (bool)filter_input(INPUT_POST,'agecheck_passed',FILTER_VALIDATE_BOOLEAN);
+	$agecheck_passed = (bool)filter_input_data('POST','agecheck_passed',FILTER_VALIDATE_BOOLEAN);
 	if($agecheck_passed){
 		setcookie("p_n_agecheck_passed","1", time()+(86400*30),"","",false,true);//1ヶ月
 	}
@@ -98,7 +102,7 @@ function age_check_required_to_view(): void {
 	}
 
 	$admin_pass= null;
-	$agecheck_passed = (bool)filter_input(INPUT_COOKIE,'p_n_agecheck_passed');
+	$agecheck_passed = (bool)filter_input_data('COOKIE','p_n_agecheck_passed');
 	if(!$agecheck_passed){
 		$templete='age_check.html';
 		include __DIR__.'/'.$skindir.$templete;
@@ -119,14 +123,17 @@ function admin_in(): void {
 
 	aikotoba_required_to_view();
 
-	$page=(int)filter_input(INPUT_GET,'page',FILTER_VALIDATE_INT);
-	$resno=(int)filter_input(INPUT_GET,'resno',FILTER_VALIDATE_INT);
-	$catalog=(bool)filter_input(INPUT_GET,'catalog',FILTER_VALIDATE_BOOLEAN);
-	$res_catalog=(bool)filter_input(INPUT_GET,'res_catalog',FILTER_VALIDATE_BOOLEAN);
-	$search=(bool)filter_input(INPUT_GET,'search',FILTER_VALIDATE_BOOLEAN);
-	$radio=(int)filter_input(INPUT_GET,'radio',FILTER_VALIDATE_INT);
-	$imgsearch=(bool)filter_input(INPUT_GET,'imgsearch',FILTER_VALIDATE_BOOLEAN);
-	$q=(string)filter_input(INPUT_GET,'q');
+	$page=(int)filter_input_data('GET','page',FILTER_VALIDATE_INT);
+	$resno=(int)filter_input_data('GET','resno',FILTER_VALIDATE_INT);
+	if($page<0||$resno<0){//負の値の時はトップページにリダイレクト
+		redirect('./');
+	}
+	$catalog=(bool)filter_input_data('GET','catalog',FILTER_VALIDATE_BOOLEAN);
+	$res_catalog=(bool)filter_input_data('GET','res_catalog',FILTER_VALIDATE_BOOLEAN);
+	$search=(bool)filter_input_data('GET','search',FILTER_VALIDATE_BOOLEAN);
+	$radio=(int)filter_input_data('GET','radio',FILTER_VALIDATE_INT);
+	$imgsearch=(bool)filter_input_data('GET','imgsearch',FILTER_VALIDATE_BOOLEAN);
+	$q=(string)filter_input_data('GET','q');
 
 	session_sta();
 	$admindel=admindel_valid();
@@ -157,7 +164,7 @@ function adminpost(): void {
 	check_same_origin();
 	check_password_input_error_count();
 	session_sta();
-	if(!is_adminpass(filter_input(INPUT_POST,'adminpass'))){
+	if(!is_adminpass(filter_input_data('POST','adminpass'))){
 		if(isset($_SESSION['adminpost'])){
 			unset($_SESSION['adminpost']);
 		} 
@@ -179,7 +186,7 @@ function admin_del(): void {
 	check_password_input_error_count();
 
 	session_sta();
-	if(!is_adminpass(filter_input(INPUT_POST,'adminpass'))){
+	if(!is_adminpass(filter_input_data('POST','adminpass'))){
 		if(isset($_SESSION['admindel'])){
 			unset($_SESSION['admindel']);
 		} 
@@ -197,9 +204,9 @@ function userdel_mode(): void {
 
 	session_sta();
 
-	$page=(int)filter_input(INPUT_GET,'page',FILTER_VALIDATE_INT);
+	$page=(int)filter_input_data('GET','page',FILTER_VALIDATE_INT);
 	$_SESSION['userdel']='userdel_mode';
-	$resno=(int)filter_input(INPUT_GET,'resno',FILTER_VALIDATE_INT);
+	$resno=(int)filter_input_data('GET','resno',FILTER_VALIDATE_INT);
 	if($resno){
 		redirect('./?resno='.$resno);
 	}
@@ -225,7 +232,7 @@ function userdel_valid(): bool {
 function aikotoba_valid(): bool {
 	global $keep_aikotoba_login_status,$aikotoba;
 	session_sta();
-	$keep=$keep_aikotoba_login_status ? ($aikotoba && ($aikotoba===(string)filter_input(INPUT_COOKIE,'aikotoba'))
+	$keep=$keep_aikotoba_login_status ? ($aikotoba && ($aikotoba===(string)filter_input_data('COOKIE','aikotoba'))
 	) : false;
 	return ($keep||isset($_SESSION['aikotoba'])&&($_SESSION['aikotoba']==='aikotoba'));
 }
@@ -233,7 +240,7 @@ function aikotoba_valid(): bool {
 //センシティブコンテンツ
 function view_nsfw(): void {
 
-	$view=(bool)filter_input(INPUT_POST,'view_nsfw',FILTER_VALIDATE_BOOLEAN);
+	$view=(bool)filter_input_data('POST','view_nsfw',FILTER_VALIDATE_BOOLEAN);
 	if($view){
 		setcookie("nsfwc",'on',time()+(60*60*24*30),"","",false,true);
 	}
@@ -244,7 +251,7 @@ function view_nsfw(): void {
 //閲覧注意画像を隠す隠さない
 function set_nsfw_show_hide(): void {
 
-	$view=(bool)filter_input(INPUT_POST,'set_nsfw_show_hide');
+	$view=(bool)filter_input_data('POST','set_nsfw_show_hide');
 	if($view){
 		setcookie("p_n_set_nsfw_show_hide",true,time()+(60*60*24*365),"","",false,true);
 	}else{
@@ -253,7 +260,7 @@ function set_nsfw_show_hide(): void {
 }
 function set_darkmode(): void {
 
-	$darkmode=(bool)filter_input(INPUT_POST,'darkmode');
+	$darkmode=(bool)filter_input_data('POST','darkmode');
 	if($darkmode){
 		setcookie("p_n_set_darkmode","1",time()+(60*60*24*365),"","",false,true);
 	}else{
@@ -263,13 +270,13 @@ function set_darkmode(): void {
 
 //ログイン・ログアウト時のLocationを分岐
 function branch_destination_of_location(): void {
-	$page=(int)filter_input(INPUT_POST,'postpage',FILTER_VALIDATE_INT);
-	$resno=(int)filter_input(INPUT_POST,'resno',FILTER_VALIDATE_INT);
-	$resno= $resno ? $resno : (int)filter_input(INPUT_POST,'postresno',FILTER_VALIDATE_INT);
-	$catalog=(bool)filter_input(INPUT_POST,'catalog',FILTER_VALIDATE_BOOLEAN);
-	$search=(bool)filter_input(INPUT_POST,'search',FILTER_VALIDATE_BOOLEAN);
-	$paintcom=(bool)filter_input(INPUT_POST,'paintcom',FILTER_VALIDATE_BOOLEAN);
-	$res_catalog=(bool)filter_input(INPUT_POST,'res_catalog',FILTER_VALIDATE_BOOLEAN);
+	$page=(int)filter_input_data('POST','postpage',FILTER_VALIDATE_INT);
+	$resno=(int)filter_input_data('POST','resno',FILTER_VALIDATE_INT);
+	$resno= $resno ? $resno : (int)filter_input_data('POST','postresno',FILTER_VALIDATE_INT);
+	$catalog=(bool)filter_input_data('POST','catalog',FILTER_VALIDATE_BOOLEAN);
+	$search=(bool)filter_input_data('POST','search',FILTER_VALIDATE_BOOLEAN);
+	$paintcom=(bool)filter_input_data('POST','paintcom',FILTER_VALIDATE_BOOLEAN);
+	$res_catalog=(bool)filter_input_data('POST','res_catalog',FILTER_VALIDATE_BOOLEAN);
 
 	if($paintcom){
 		location_paintcom();
@@ -285,10 +292,10 @@ function branch_destination_of_location(): void {
 		redirect('./?mode=catalog&page='.h($page));
 	}
 	if($search){
-		$radio=(int)filter_input(INPUT_POST,'radio',FILTER_VALIDATE_INT);
-		$imgsearch=(bool)filter_input(INPUT_POST,'imgsearch',FILTER_VALIDATE_BOOLEAN);
+		$radio=(int)filter_input_data('POST','radio',FILTER_VALIDATE_INT);
+		$imgsearch=(bool)filter_input_data('POST','imgsearch',FILTER_VALIDATE_BOOLEAN);
 		$imgsearch=$imgsearch ? 'on' : 'off';
-		$q=(string)filter_input(INPUT_POST,'q');
+		$q=(string)filter_input_data('POST','q');
 		
 		redirect('./?mode=search&page='.h($page).'&imgsearch='.h($imgsearch).'&q='.h($q).'&radio='.h($radio));
 	}
@@ -304,37 +311,50 @@ function redirect($url): void {
 	exit();
 }
 // コンティニュー認証
-function check_cont_pass(): bool {
+function check_cont_pass(): void {
 
 	global $en;
 
 	check_same_origin();
 
-	$no = (string)filter_input(INPUT_POST, 'no',FILTER_VALIDATE_INT);
-	$id = (string)filter_input(INPUT_POST, 'time');//intの範囲外
-	$pwd=t(filter_input(INPUT_POST, 'pwd'));//パスワードを取得
-	$pwd=$pwd ? $pwd : t(filter_input(INPUT_COOKIE,'pwdc'));//未入力ならCookieのパスワード
+	$adminmode = adminpost_valid() || admindel_valid(); 
 
-	if(is_file(LOG_DIR."$no.log")){
-		check_open_no($no);
-		$rp=fopen(LOG_DIR."$no.log","r");
-		if(!$rp){
-			error($en?'This operation has failed.':'失敗しました。');
-		}
-		while ($line = fgets($rp)) {
-			if(!trim($line)){
-				continue;
-			}
-			list($_no,$sub,$name,$verified,$com,$url,$imgfile,$w,$h,$thumbnail,$painttime,$log_md5,$tool,$pchext,$time,$first_posted_time,$host,$userid,$hash,$oya)=explode("\t",trim($line));
-			if($id===$time && $no===$_no && $pwd && password_verify($pwd,$hash)){
-				closeFile ($rp);
-				return true;
-			}
-		}
-		closeFile ($rp);
+	$no = (string)filter_input_data('POST', 'no',FILTER_VALIDATE_INT);
+	$id = (string)filter_input_data('POST', 'time');//intの範囲外
+	$pwd=t(filter_input_data('POST', 'pwd'));//パスワードを取得
+	$pwd=$pwd ? $pwd : t(filter_input_data('COOKIE','pwdc'));//未入力ならCookieのパスワード
+	$flag = false;
+	if(!is_file(LOG_DIR."$no.log")){
+		error($en? 'The article does not exist.':'記事がありません。');
 	}
+	check_open_no($no);
+	$rp=fopen(LOG_DIR."$no.log","r");
+	if(!$rp){
+		error($en?'This operation has failed.':'失敗しました。');
+	}
+	while ($line = fgets($rp)) {
+		if(!trim($line)){
+			continue;
+		}
+		if(strpos($line,"\t".$id."\t")!==false){
+			list($_no,$sub,$name,$verified,$com,$url,$imgfile,$w,$h,$thumbnail,$painttime,$log_md5,$tool,$pchext,$time,$first_posted_time,$host,$userid,$hash,$oya)=explode("\t",trim($line));
+			if($id===$time && $no===$_no && ($adminmode && $verified ==='adminpost' || $pwd && password_verify($pwd,$hash))){
+				$flag = true;
+				break;
+			}
+			break;
+		}
+	}
+	closeFile ($rp);
+	if(!$flag){
+		error($en?'password is wrong.':'パスワードが違います。');
+	}
+}
 
-	error($en?'password is wrong.':'パスワードが違います。');
+//コンティニュー前画面のペイントツールを選択可能に
+function set_app_select_enabled_session() : void {
+	session_sta();
+	$_SESSION['enableappselect'] = true;
 }
 
 //設定済みのペイントツール名かどうか調べる
@@ -362,7 +382,7 @@ function create_res($line,$options=[]): array {
 		$upload_image = true;
 	}
 
-	$anime = in_array($pchext,['.pch','.tgkr']); 
+	$anime = $pchext ? in_array($pchext,['.pch','.tgkr']) : false; 
 	$hide_thumbnail = $mark_sensitive_image ? (strpos($thumbnail,'hide_')!==false) :'';
 	$hide_thumbnail = $set_all_images_to_nsfw ? $set_all_images_to_nsfw : $hide_thumbnail;
 
@@ -385,8 +405,9 @@ function create_res($line,$options=[]): array {
 	$check_elapsed_days = !$isset_catalog ? check_elapsed_days($time) : true;//念のためtrueに
 	$verified = ($verified==='adminpost');
 	$three_point_sub = ($isset_catalog && (mb_strlen($sub)>15)) ? '…' :'';
-	$webpimg = is_file('webp/'.$time.'t.webp');
+	$webpimg = $imgfile ? is_file('webp/'.$time.'t.webp') : false;
 	$com = (!$isset_catalog || $isset_search) ? $com : '';
+	$com = $com ? (!$isset_search ? str_replace('"\n"',"\n",$com) : str_replace('"\n"'," ",$com)) : '';
 
 	$res=[
 		'no' => $no,
@@ -429,8 +450,6 @@ function create_res($line,$options=[]): array {
 		'link_thumbnail' => $link_thumbnail, //サムネイルにリンクがある時
 		'not_deleted' => !(!$name && !$com && !$url&& !$imgfile && !$userid), //表示する記事がある親
 	];
-
-	$res['com']= $com ? (!$isset_search ? str_replace('"\n"',"\n",$res['com']) : str_replace('"\n"'," ",$res['com'])) : '';
 
 	foreach($res as $key=>$val){
 		$res[$key]=h($val);
@@ -819,7 +838,7 @@ function error($str,$historyback=true): void {
 
 	global $boardname,$skindir,$en,$aikotoba_required_to_view,$petit_lot;
 
-	$asyncflag = (bool)filter_input(INPUT_POST,'asyncflag',FILTER_VALIDATE_BOOLEAN);
+	$asyncflag = (bool)filter_input_data('POST','asyncflag',FILTER_VALIDATE_BOOLEAN);
 	$http_x_requested_with= (bool)(isset($_SERVER['HTTP_X_REQUESTED_WITH']));
 	if($http_x_requested_with||$asyncflag){
 		header('Content-type: text/plain');
@@ -850,7 +869,7 @@ function check_csrf_token(): void {
 	} 
 	check_same_origin();
 	session_sta();
-	$token=(string)filter_input(INPUT_POST,'token');
+	$token=(string)filter_input_data('POST','token');
 	$session_token=isset($_SESSION['token']) ? (string)$_SESSION['token'] : '';
 	if(!$session_token||$token!==$session_token){
 		error($en?"CSRF token mismatch.\nPlease reload.":"CSRFトークンが一致しません。\nリロードしてください。");
@@ -858,11 +877,16 @@ function check_csrf_token(): void {
 }
 //session開始
 function session_sta(): void {
+	global $session_name;
+
+	$session_name = $session_name ?? 'session_petit';
+
 	if(!isset($_SESSION)){
 		ini_set('session.use_strict_mode', 1);
 		session_set_cookie_params(
 			0,"","",false,true
 		);
+		session_name($session_name);
 		session_start();
 		header('Expires:');
 		header('Cache-Control:');
@@ -874,7 +898,7 @@ function check_same_origin(): void {
 	global $en,$usercode;
 
 	session_sta();
-	$c_usercode = t(filter_input(INPUT_COOKIE, 'usercode'));//user-codeを取得
+	$c_usercode = t(filter_input_data('COOKIE', 'usercode'));//user-codeを取得
 	$session_usercode = isset($_SESSION['usercode']) ? t($_SESSION['usercode']) : "";
 	if(!$c_usercode){
 		error($en?'Cookie check failed.':'Cookieが確認できません。');
@@ -892,7 +916,8 @@ function check_same_origin(): void {
 
 function check_open_no($no): void {
 	global $en;
-	if(!is_numeric($no)){
+	$no=(string)$no;
+	if(!ctype_digit($no)||$no !== basename($no)){
 		error($en?'This operation has failed.':'失敗しました。');
 	}
 }
@@ -910,8 +935,8 @@ function getId ($userip): string {
 //Asyncリクエストの時は処理を中断
 function check_AsyncRequest($upfile=''): void {
 	//ヘッダーが確認できなかった時の保険
-	$asyncflag = (bool)filter_input(INPUT_POST,'asyncflag',FILTER_VALIDATE_BOOLEAN);
-	$paint_picrep = (bool)filter_input(INPUT_POST,'paint_picrep',FILTER_VALIDATE_BOOLEAN);
+	$asyncflag = (bool)filter_input_data('POST','asyncflag',FILTER_VALIDATE_BOOLEAN);
+	$paint_picrep = (bool)filter_input_data('POST','paint_picrep',FILTER_VALIDATE_BOOLEAN);
 	$http_x_requested_with= (bool)(isset($_SERVER['HTTP_X_REQUESTED_WITH']));
 	//Paintの画像差し換えの時はAsyncリクエストを継続
 	if(!$paint_picrep && ($http_x_requested_with || $asyncflag)){//非同期通信ならエラーチェックだけすませて処理中断。通常フォームでやりなおし。
@@ -925,7 +950,7 @@ function deltemp(): void {
 	global $check_password_input_error_count;
 	$handle = opendir(TEMP_DIR);
 	while ($file = readdir($handle)) {
-		if(!is_dir($file)) {
+		if(!is_dir(TEMP_DIR.$file) && is_file(TEMP_DIR.$file)){
 			$file=basename($file);
 			//pchアップロードペイントファイル削除
 			//仮差し換えアップロードファイル削除
@@ -960,11 +985,11 @@ function Reject_if_NGword_exists_in_the_post(): void {
 
 	$admin =(adminpost_valid()||admindel_valid());
 
-	$name = t(filter_input(INPUT_POST,'name'));
-	$sub = t(filter_input(INPUT_POST,'sub'));
-	$url = t(filter_input(INPUT_POST,'url',FILTER_VALIDATE_URL));
-	$com = t(filter_input(INPUT_POST,'com'));
-	$pwd = t(filter_input(INPUT_POST,'pwd'));
+	$name = t(filter_input_data('POST','name'));
+	$sub = t(filter_input_data('POST','sub'));
+	$url = t(filter_input_data('POST','url',FILTER_VALIDATE_URL));
+	$com = t(filter_input_data('POST','com'));
+	$pwd = t(filter_input_data('POST','pwd'));
 
 	if($admin || is_adminpass($pwd)){
 		return;
@@ -994,7 +1019,7 @@ function Reject_if_NGword_exists_in_the_post(): void {
 	//本文に日本語がなければ拒絶
 	if ($use_japanesefilter) {
 		mb_regex_encoding("UTF-8");
-		if ($com_len && !preg_match("/[ぁ-んァ-ヶー一-龠]+/u",$chk_com)) error($en?'Comment should have at least some Japanese characters.':'日本語で何か書いてください。');
+		if ($com_len && !preg_match("/[ぁ-んァ-ヶｧ-ﾝー一-龠]+/u",$chk_com)) error($en?'Comment should have at least some Japanese characters.':'日本語で何か書いてください。');
 	}
 
 	//本文へのURLの書き込みを禁止
@@ -1095,6 +1120,9 @@ function check_dir ($path): void {
 	if (!is_dir($path)) {
 			mkdir($path, 0707);
 			chmod($path, 0707);
+	}
+	if (!is_readable($path) || !is_writable($path)){
+		chmod($path, 0707);
 	}
 	if (!is_dir($path)){
 		die(h($path) . $msg['001']);
@@ -1273,7 +1301,7 @@ function microtime2time($microtime): int {
 
 //POSTされた値をログファイルに格納する書式にフォーマット
 function create_formatted_text_from_post($name,$sub,$url,$com): array {
-	global $en,$name_input_required,$subject_input_required;
+	global $en,$name_input_required,$subject_input_required,$comment_input_required;
 
 	if(!$name||preg_match("/\A\s*\z/u",$name)) $name="";
 	if(!$sub||preg_match("/\A\s*\z/u",$sub))   $sub="";
@@ -1296,6 +1324,9 @@ function create_formatted_text_from_post($name,$sub,$url,$com): array {
 			$sub= $en ? 'No subject':'無題';
 		}
 	}
+	if(!$com && $comment_input_required){
+		error($en?'Please enter your comment.':'何か書いてください。');
+	}
 	$formatted_post=[
 		'name'=>$name,
 		'sub'=>$sub,
@@ -1307,17 +1338,6 @@ function create_formatted_text_from_post($name,$sub,$url,$com): array {
 	}
 	return $formatted_post;
 
-}
-
-//検索文字列をフォーマット
-function create_formatted_text_for_search($str): string {
-
-	$s_str=mb_convert_kana($str, 'rn', 'UTF-8');//全角英数を半角に
-	$s_str=str_replace([" ", "　"], "", $s_str);
-	$s_str=str_replace("〜","～", $s_str);//波ダッシュを全角チルダに
-	$s_str=strtolower($s_str);//小文字に
-
-	return $s_str; 
 }
 
 //PaintBBS NEOのpchかどうか調べる
@@ -1391,7 +1411,7 @@ function check_password_input_error_count(): void {
 	if(count($arr_err)>=5){
 		error($en?'Rejected.':'拒絶されました。');
 	}
-	if(!is_adminpass(filter_input(INPUT_POST,'adminpass'))){
+	if(!is_adminpass(filter_input_data('POST','adminpass'))){
 
 		$errlog=$userip."\n";
 		file_put_contents($file,$errlog,FILE_APPEND);
@@ -1437,30 +1457,33 @@ function getTranslatedLayerName(): string {
 function post_share_server(): void {
 	global $en;
 
-	$sns_server_radio=(string)filter_input(INPUT_POST,"sns_server_radio",FILTER_VALIDATE_URL);
-	$sns_server_radio_for_cookie=(string)filter_input(INPUT_POST,"sns_server_radio");//directを判定するためurlでバリデーションしていない
+	$sns_server_radio=(string)filter_input_data('POST',"sns_server_radio",FILTER_VALIDATE_URL);
+	$sns_server_radio_for_cookie=(string)filter_input_data('POST',"sns_server_radio");//directを判定するためurlでバリデーションしていない
 	$sns_server_radio_for_cookie=($sns_server_radio_for_cookie === 'direct') ? 'direct' : $sns_server_radio;
-	$sns_server_direct_input=(string)filter_input(INPUT_POST,"sns_server_direct_input",FILTER_VALIDATE_URL);
-	$encoded_t=(string)filter_input(INPUT_POST,"encoded_t");
+	$sns_server_direct_input=(string)filter_input_data('POST',"sns_server_direct_input",FILTER_VALIDATE_URL);
+	$encoded_t=(string)filter_input_data('POST',"encoded_t");
 	$encoded_t=urlencode($encoded_t);
-	$encoded_u=(string)filter_input(INPUT_POST,"encoded_u");
+	$encoded_u=(string)filter_input_data('POST',"encoded_u");
 	$encoded_u=urlencode($encoded_u);
 	setcookie("sns_server_radio_cookie",$sns_server_radio_for_cookie, time()+(86400*30),"","",false,true);
 	setcookie("sns_server_direct_input_cookie",$sns_server_direct_input, time()+(86400*30),"","",false,true);
 	$share_url='';
 	if($sns_server_radio){
 		$share_url=$sns_server_radio."/share?text=";
-	}elseif($sns_server_direct_input){
+	} elseif($sns_server_direct_input){//直接入力時
 		$share_url=$sns_server_direct_input."/share?text=";
+		if($sns_server_direct_input==="https://bsky.app"){
+			$share_url="https://bsky.app/intent/compose?text=";
+		} elseif($sns_server_direct_input==="https://www.threads.net"){
+			$share_url="https://www.threads.net/intent/post?text=";
+		}
 	}
 	if(in_array($sns_server_radio,["https://x.com","https://twitter.com"])){
 		// $share_url="https://x.com/intent/post?text=";
 		$share_url="https://twitter.com/intent/tweet?text=";
-	}
-	if(in_array("https://bsky.app",[$sns_server_radio,$sns_server_direct_input])){
+	} elseif($sns_server_radio === "https://bsky.app"){
 		$share_url="https://bsky.app/intent/compose?text=";
-	}
-	if(in_array("https://www.threads.net",[$sns_server_radio,$sns_server_direct_input])){
+	}	elseif($sns_server_radio === "https://www.threads.net"){
 		$share_url="https://www.threads.net/intent/post?text=";
 	}
 	$share_url.=$encoded_t.'%20'.$encoded_u;
@@ -1469,4 +1492,33 @@ function post_share_server(): void {
 		error($en ? "Please select an SNS sharing destination.":"SNSの共有先を選択してください。");
 	}
 	redirect($share_url);
+}
+//filter_input のラッパー関数
+function filter_input_data(string $input, string $key, int $filter=0) {
+	// $_GETまたは$_POSTからデータを取得
+	$value = null;
+	if ($input === 'GET') {
+			$value = $_GET[$key] ?? null;
+	} elseif ($input === 'POST') {
+			$value = $_POST[$key] ?? null;
+	} elseif ($input === 'COOKIE') {
+			$value = $_COOKIE[$key] ?? null;
+	}
+
+	// データが存在しない場合はnullを返す
+	if ($value === null) {
+			return null;
+	}
+
+	// フィルタリング処理
+	switch ($filter) {
+		case FILTER_VALIDATE_BOOLEAN:
+			return  filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+		case FILTER_VALIDATE_INT:
+			return filter_var($value, FILTER_VALIDATE_INT);
+		case FILTER_VALIDATE_URL:
+			return filter_var($value, FILTER_VALIDATE_URL);
+		default:
+			return $value;  // 他のフィルタはそのまま返す
+	}
 }

@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2025
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20250114';
+$petit_lot='lot.20250318';
 $lang = ($http_langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
@@ -16,17 +16,17 @@ if(!is_file(__DIR__.'/functions.php')){
 	die(__DIR__.'/functions.php'.($en ? ' does not exist.':'がありません。'));
 }
 require_once(__DIR__.'/functions.php');
-if(!isset($functions_ver)||$functions_ver<20231219){
+if(!isset($functions_ver)||$functions_ver<20250310){
 	die($en?'Please update functions.php to the latest version.':'functions.phpを最新版に更新してください。');
 }
 check_file(__DIR__.'/misskey_note.inc.php');
 require_once(__DIR__.'/misskey_note.inc.php');
-if(!isset($misskey_note_ver)||$misskey_note_ver<20231216){
+if(!isset($misskey_note_ver)||$misskey_note_ver<20250318){
 	die($en?'Please update misskey_note.inc.php to the latest version.':'misskey_note.inc.phpを最新版に更新してください。');
 }
 check_file(__DIR__.'/save.inc.php');
 require_once(__DIR__.'/save.inc.php');
-if(!isset($save_inc_ver)||$save_inc_ver<20231219){
+if(!isset($save_inc_ver)||$save_inc_ver<20250318){
 	die($en?'Please update save.inc.php to the latest version.':'save.inc.phpを最新版に更新してください。');
 }
 // jQueryバージョン
@@ -58,11 +58,11 @@ $pmin_h = $pmin_h ?? 300;//高さ
 $pdef_w = $pdef_w ?? 300;//幅
 $pdef_h = $pdef_h ?? 300;//高さ
 $step_of_canvas_size = $step_of_canvas_size ?? 50;
-$mode = (string)filter_input(INPUT_POST,'mode');
-$mode = $mode ? $mode :(string)filter_input(INPUT_GET,'mode');
+$mode = (string)filter_input_data('POST','mode');
+$mode = $mode ? $mode :(string)filter_input_data('GET','mode');
 $userip = get_uip();
 //user-codeの発行
-$usercode = t((string)filter_input(INPUT_COOKIE, 'usercode'));//user-codeを取得
+$usercode = t((string)filter_input_data('COOKIE', 'usercode'));//user-codeを取得
 session_sta();
 $session_usercode = isset($_SESSION['usercode']) ? t((string)$_SESSION['usercode']) : "";
 $usercode = $usercode ? $usercode : $session_usercode;
@@ -116,10 +116,10 @@ function paint(): void {
 
 	check_same_origin();
 
-	$app = (string)filter_input(INPUT_POST,'app');
-	$picw = (int)filter_input(INPUT_POST,'picw',FILTER_VALIDATE_INT);
-	$pich = (int)filter_input(INPUT_POST,'pich',FILTER_VALIDATE_INT);
-	$resto = t((string)filter_input(INPUT_POST, 'resto',FILTER_VALIDATE_INT));
+	$app = (string)filter_input_data('POST','app');
+	$picw = (int)filter_input_data('POST','picw',FILTER_VALIDATE_INT);
+	$pich = (int)filter_input_data('POST','pich',FILTER_VALIDATE_INT);
+	$resto = t((string)filter_input_data('POST', 'resto',FILTER_VALIDATE_INT));
 	if(strlen($resto)>1000){
 		error($en?'Unknown error':'問題が発生しました。');
 	}
@@ -135,7 +135,7 @@ function paint(): void {
 	setcookie("picwc", $picw , time()+(60*60*24*30),"","",false,true);//幅
 	setcookie("pichc", $pich , time()+(60*60*24*30),"","",false,true);//高さ
 
-	$mode = (string)filter_input(INPUT_POST, 'mode');
+	$mode = (string)filter_input_data('POST', 'mode');
 
 	$imgfile='';
 	$oekaki_id='';
@@ -210,12 +210,12 @@ function paint(): void {
 	$hide_animation=false;
 	if($mode==="contpaint"){
 
-		$imgfile = basename((string)filter_input(INPUT_POST,'imgfile'));
-		$ctype = (string)filter_input(INPUT_POST, 'ctype');
-		$type = (string)filter_input(INPUT_POST, 'type');
-		$no = (string)filter_input(INPUT_POST, 'no',FILTER_VALIDATE_INT);
-		$time = basename((string)filter_input(INPUT_POST, 'time'));
-		$cont_paint_same_thread=(bool)filter_input(INPUT_POST, 'cont_paint_same_thread',FILTER_VALIDATE_BOOLEAN);
+		$imgfile = basename((string)filter_input_data('POST','imgfile'));
+		$ctype = (string)filter_input_data('POST', 'ctype');
+		$type = (string)filter_input_data('POST', 'type');
+		$no = (string)filter_input_data('POST', 'no',FILTER_VALIDATE_INT);
+		$time = basename((string)filter_input_data('POST', 'time'));
+		$cont_paint_same_thread=(bool)filter_input_data('POST', 'cont_paint_same_thread',FILTER_VALIDATE_BOOLEAN);
 
 		if(is_file(LOG_DIR."{$no}.log")){
 			if($type!=='rep'){
@@ -244,12 +244,12 @@ function paint(): void {
 				$img_klecks =IMG_DIR.$time.'.psd';
 			}
 		}
-		$hide_animation = (bool)filter_input(INPUT_POST,'hide_animation',FILTER_VALIDATE_BOOLEAN);
+		$hide_animation = (bool)filter_input_data('POST','hide_animation',FILTER_VALIDATE_BOOLEAN);
 		$hide_animation = $hide_animation ? 'true' : 'false';
 		if($type==='rep'){//画像差し換え
 			$rep=true;
-			$pwd = t((string)filter_input(INPUT_POST, 'pwd'));
-			$pwd=$pwd ? $pwd : t((string)filter_input(INPUT_COOKIE,'pwdc'));//未入力ならCookieのパスワード
+			$pwd = t((string)filter_input_data('POST', 'pwd'));
+			$pwd=$pwd ? $pwd : t((string)filter_input_data('COOKIE','pwdc'));//未入力ならCookieのパスワード
 			if(strlen($pwd) > 100) error($en? 'Password is too long.':'パスワードが長すぎます。');
 			if($pwd){
 				$pwd=basename($pwd);
@@ -397,9 +397,9 @@ function paintcom(): void {
 	}
 	$aikotoba = $use_aikotoba ? aikotoba_valid() : true;
 
-	$namec = (string)filter_input(INPUT_COOKIE,'namec');
-	$pwdc = (string)filter_input(INPUT_COOKIE,'pwdc');
-	$urlc = (string)filter_input(INPUT_COOKIE,'urlc');
+	$namec = (string)filter_input_data('COOKIE','namec');
+	$pwdc = (string)filter_input_data('COOKIE','pwdc');
+	$urlc = (string)filter_input_data('COOKIE','urlc');
 
 	// HTML出力
 	$templete='paint_com.html';
@@ -409,7 +409,7 @@ function paintcom(): void {
 
 function saveimage(): void {
 	
-	$tool=filter_input(INPUT_GET,"tool");
+	$tool=filter_input_data('GET',"tool");
 
 	$image_save = new image_save;
 
@@ -458,9 +458,9 @@ function defaultview(): void {
 		$select_app=($count_arr_apps>1);
 		$app_to_use=($count_arr_apps===1) ? $arr_apps[0] : ''; 
 	
-		$appc=h((string)filter_input(INPUT_COOKIE,'appc'));
-		$picwc=h((string)filter_input(INPUT_COOKIE,'picwc'));
-		$pichc=h((string)filter_input(INPUT_COOKIE,'pichc'));
+		$appc=h((string)filter_input_data('COOKIE','appc'));
+		$picwc=h((string)filter_input_data('COOKIE','picwc'));
+		$pichc=h((string)filter_input_data('COOKIE','pichc'));
 	
 		$petit_ver="";
 

@@ -2,7 +2,7 @@
 //Petit Note 2021-2024 (c)satopian MIT Licence
 //https://paintbbs.sakura.ne.jp/
 
-$save_inc_ver=20241225;
+$save_inc_ver=20250318;
 class image_save{
 
 	private $security_timer,$imgfile,$en,$count,$errtext,$session_usercode; // プロパティとして宣言
@@ -13,7 +13,7 @@ class image_save{
 		global $security_timer,$pmax_w,$pmax_h;
 
 	// $security_timer=60;	
-	$this->security_timer = isset($security_timer) ? $security_timer : 0;
+	$this->security_timer = $security_timer ?? 0;
 	//容量違反チェックをする する:1 しない:0
 	defined('SIZE_CHECK') or define('SIZE_CHECK', '1');
 	//PNG画像データ投稿容量制限KB(chiは含まない)
@@ -26,15 +26,15 @@ class image_save{
 		redirect("./");
 	}
 
-	$lang = ($http_langs = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '')
+	$lang = ($http_langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
 	? explode( ',', $http_langs )[0] : '';
 	$this->en= (stripos($lang,'ja')!==0);
 
 	$this->imgfile = time().substr(microtime(),2,6);	//画像ファイル名
 	$this->imgfile = is_file(TEMP_DIR.$this->imgfile.'.png') ? ((time()+1).substr(microtime(),2,6)) : $this->imgfile;
 	
-	$this->pmax_w=isset($pmax_w) ? $pmax_w :'';
-	$this->pmax_h=isset($pmax_h) ? $pmax_h :'';
+	$this->pmax_w= $pmax_w ?? '';
+	$this->pmax_h= $pmax_h ?? '';
 	
 	}
 
@@ -42,11 +42,11 @@ class image_save{
 
 		$this->error_type="klecks";
 
-		$this->tool = t(filter_input(INPUT_POST, 'tool'));
-		$this->repcode = t(filter_input(INPUT_POST, 'repcode'));
-		$this->resto = t(filter_input(INPUT_POST, 'resto',FILTER_VALIDATE_INT));
-		$this->stime = t(filter_input(INPUT_POST, 'stime',FILTER_VALIDATE_INT));
-		$this->hide_animation = t(filter_input(INPUT_POST, 'hide_animation'));
+		$this->tool = t(filter_input_data('POST', 'tool'));
+		$this->repcode = t(filter_input_data('POST', 'repcode'));
+		$this->resto = t(filter_input_data('POST', 'resto',FILTER_VALIDATE_INT));
+		$this->stime = t(filter_input_data('POST', 'stime',FILTER_VALIDATE_INT));
+		$this->hide_animation = t(filter_input_data('POST', 'hide_animation'));
 
 		$this->check_security();
 		$this->move_uploaded_image();
@@ -60,7 +60,7 @@ class image_save{
 
 		$this->error_type="neo";
 
-		$sendheader = (string)filter_input(INPUT_POST,'header');
+		$sendheader = (string)filter_input_data('POST','header');
 
 		$sendheader = str_replace("&amp;", "&", $sendheader);
 		$this->tool = 'neo';
@@ -86,9 +86,9 @@ class image_save{
 
 		$this->error_type="chi";
 		$this->tool = 'chi';
-		$this->repcode = t(filter_input(INPUT_GET, 'repcode'));
-		$this->resto = t(filter_input(INPUT_GET, 'resto',FILTER_VALIDATE_INT));
-		$this->stime = t(filter_input(INPUT_GET, 'stime',FILTER_VALIDATE_INT));
+		$this->repcode = t(filter_input_data('GET', 'repcode'));
+		$this->resto = t(filter_input_data('GET', 'resto',FILTER_VALIDATE_INT));
+		$this->stime = t(filter_input_data('GET', 'stime',FILTER_VALIDATE_INT));
 
 		$this->check_security();
 		$this->move_uploaded_image();
@@ -109,8 +109,8 @@ class image_save{
 		$this->check_async_request();
 
 		session_sta();
-		$this->session_usercode = isset($_SESSION['usercode']) ? $_SESSION['usercode'] : "";
-		$cookie_usercode = t(filter_input(INPUT_COOKIE, 'usercode'));
+		$this->session_usercode = $_SESSION['usercode'] ?? "";
+		$cookie_usercode = t(filter_input_data('COOKIE', 'usercode'));
 		if(!$this->session_usercode || !$cookie_usercode || ($this->session_usercode !== $cookie_usercode)){
 			$this->error_msg($this->en ? "User code has been reissued.\nPlease try again." : "ユーザーコードを再発行しました。\n再度投稿してみてください。");
 		}
