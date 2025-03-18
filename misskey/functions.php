@@ -549,10 +549,10 @@ function calc_pagination_range($page,$pagedef): array {
 
 //ユーザーip
 function get_uip(): string {
-	$ip = isset($_SERVER["HTTP_CLIENT_IP"]) ? $_SERVER["HTTP_CLIENT_IP"] :'';
-	$ip = $ip ? $ip : (isset($_SERVER["HTTP_INCAP_CLIENT_IP"]) ? $_SERVER["HTTP_INCAP_CLIENT_IP"] : '');
-	$ip = $ip ? $ip : (isset($_SERVER["HTTP_X_FORWARDED_FOR"]) ? $_SERVER["HTTP_X_FORWARDED_FOR"] : '');
-	$ip = $ip ? $ip : (isset($_SERVER["REMOTE_ADDR"]) ? $_SERVER["REMOTE_ADDR"] : '');
+	$ip = $_SERVER["HTTP_CLIENT_IP"] ?? '';
+	$ip = $ip ? $ip : ($_SERVER["HTTP_INCAP_CLIENT_IP"] ?? '');
+	$ip = $ip ? $ip : ($_SERVER["HTTP_X_FORWARDED_FOR"] ?? '');
+	$ip = $ip ? $ip : ($_SERVER["REMOTE_ADDR"] ?? '');
 	if (strstr($ip, ', ')) {
 		$ips = explode(', ', $ip);
 		$ip = $ips[0];
@@ -730,7 +730,7 @@ function check_jpeg_exif($upfile): void {
 
 	//画像回転の検出
 	$exif = exif_read_data($upfile);
-	$orientation = isset($exif["Orientation"]) ? $exif["Orientation"] : 1;
+	$orientation = $exif["Orientation"] ?? 1;
 	//位置情報はあるか?
 	$gpsdata_exists =(isset($exif['GPSLatitude']) && isset($exif['GPSLongitude'])); 
 
@@ -1403,7 +1403,7 @@ function check_password_input_error_count(): void {
 
 // 優先言語のリストをチェックして対応する言語があればその翻訳されたレイヤー名を返す
 function getTranslatedLayerName(): string {
-	$acceptedLanguages = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '';
+	$acceptedLanguages = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '';
 	$languageList = explode(',', $acceptedLanguages);
 
 	foreach ($languageList as $language) {

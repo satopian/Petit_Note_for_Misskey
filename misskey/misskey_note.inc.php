@@ -2,7 +2,7 @@
 //Petit Note 2021-2024 (c)satopian MIT LICENCE
 //https://paintbbs.sakura.ne.jp/
 //APIを使ってお絵かき掲示板からMisskeyにノート
-$misskey_note_ver=20241118;
+$misskey_note_ver=20250318;
 class misskey_note{
 
 	//Misskeyに投稿するSESSIONデータを作成
@@ -107,7 +107,6 @@ class misskey_note{
 		$misskey_server_direct_input=(string)filter_input(INPUT_POST,"misskey_server_direct_input",FILTER_VALIDATE_URL);
 		setcookie("misskey_server_radio_cookie",$misskey_server_radio_for_cookie, time()+(86400*30),"","",false,true);
 		setcookie("misskey_server_direct_input_cookie",$misskey_server_direct_input, time()+(86400*30),"","",false,true);
-		$share_url='';
 
 		if(!$misskey_server_radio && !$misskey_server_direct_input){
 			error($en ? "Please select an misskey server.":"Misskeyサーバを選択してください。");
@@ -173,7 +172,7 @@ class misskey_note{
 		global $en,$skindir,$boardname;
 		$no = (string)filter_input(INPUT_GET, 'no',FILTER_VALIDATE_INT);
 		session_sta();
-		$misskey_server_url = isset($_SESSION['misskey_server_radio']) ? $_SESSION['misskey_server_radio'] : "";
+		$misskey_server_url = $_SESSION['misskey_server_radio'] ?? "";
 		if(!$misskey_server_url || !filter_var($misskey_server_url,FILTER_VALIDATE_URL)){
 			redirect('./');
 		}

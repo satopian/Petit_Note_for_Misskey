@@ -3,7 +3,7 @@
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
 $petit_lot='lot.20250114';
-$lang = ($http_langs = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '')
+$lang = ($http_langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
 
@@ -42,22 +42,22 @@ $skindir='template/'.$skindir;
 if(!isset($admin_pass)||!$admin_pass){
 	error($en?'The administrator password has not been set.':'管理者パスワードが設定されていません。');
 }
-$max_com= isset($max_com) ? $max_com : 1000;
-$deny_all_posts= isset($deny_all_posts) ? $deny_all_posts : (isset($denny_all_posts) ? $denny_all_posts : false);
-$badhost=isset($badhost) ? $badhost :[]; 
-$aikotoba_required_to_view=isset($aikotoba_required_to_view) ? $aikotoba_required_to_view : false;
-$keep_aikotoba_login_status=isset($keep_aikotoba_login_status) ? $keep_aikotoba_login_status : false;
-$use_paintbbs_neo=isset($use_paintbbs_neo) ? $use_paintbbs_neo : true;
-$use_chickenpaint=isset($use_chickenpaint) ? $use_chickenpaint : true;
-$use_klecs=isset($use_klecs) ? $use_klecs : true;
-$use_tegaki=isset($use_tegaki) ? $use_tegaki : true;
-$use_axnos=isset($use_axnos) ? $use_axnos : true;
-$display_link_back_to_home = isset($display_link_back_to_home) ? $display_link_back_to_home : true;
-$pmin_w = isset($pmin_w) ? $pmin_w : 300;//幅
-$pmin_h = isset($pmin_h) ? $pmin_h : 300;//高さ
-$pdef_w = isset($pdef_w) ? $pdef_w : 300;//幅
-$pdef_h = isset($pdef_h) ? $pdef_h : 300;//高さ
-$step_of_canvas_size = isset($step_of_canvas_size) ? $step_of_canvas_size : 50;
+$max_com= $max_com ?? 1000;
+$deny_all_posts= $deny_all_posts ?? ($denny_all_posts ?? false);
+$badhost=$badhost ?? []; 
+$aikotoba_required_to_view= $aikotoba_required_to_view ?? false;
+$keep_aikotoba_login_status= $keep_aikotoba_login_status ?? false;
+$use_paintbbs_neo= $use_paintbbs_neo ?? true;
+$use_chickenpaint= $use_chickenpaint ?? true;
+$use_klecs= $use_klecs ?? true;
+$use_tegaki= $use_tegaki ?? true;
+$use_axnos= $use_axnos ?? true;
+$display_link_back_to_home = $display_link_back_to_home ?? true;
+$pmin_w = $pmin_w ?? 300;//幅
+$pmin_h = $pmin_h ?? 300;//高さ
+$pdef_w = $pdef_w ?? 300;//幅
+$pdef_h = $pdef_h ?? 300;//高さ
+$step_of_canvas_size = $step_of_canvas_size ?? 50;
 $mode = (string)filter_input(INPUT_POST,'mode');
 $mode = $mode ? $mode :(string)filter_input(INPUT_GET,'mode');
 $userip = get_uip();
@@ -155,7 +155,7 @@ function paint(): void {
 
 		$pchfilename = isset($_FILES['pchup']['name']) ? basename($_FILES['pchup']['name']) : '';
 		
-		$pchtmp=isset($_FILES['pchup']['tmp_name']) ? $_FILES['pchup']['tmp_name'] : '';
+		$pchtmp= $_FILES['pchup']['tmp_name'] ?? '';
 
 		if(isset($_FILES['pchup']['error']) && in_array($_FILES['pchup']['error'],[1,2])){//容量オーバー
 			error($en? 'The file size is too big.':'ファイルサイズが大きすぎます。');
@@ -195,7 +195,7 @@ function paint(): void {
 				$img_klecks = $pchup;
 				} elseif(in_array($pchext, ['gif','jpg','jpeg','png','webp']) && in_array($mime_type, ['image/gif', 'image/jpeg', 'image/png','image/webp'])){
 					$file_name=pathinfo($pchup,PATHINFO_FILENAME);
-					$max_px=isset($max_px) ? $max_px : 1024;
+					$max_px= $max_px ?? 1024;
 					thumb(TEMP_DIR,$basename_pchup,$time,$max_px,$max_px,['toolarge'=>1]);
 					list($picw,$pich) = getimagesize($pchup);
 					$imgfile = $pchup;

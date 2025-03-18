@@ -5,7 +5,7 @@
 require_once(__DIR__.'/functions.php');
 require_once(__DIR__.'/config.php');
 
-$lang = ($http_langs = isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) ? $_SERVER['HTTP_ACCEPT_LANGUAGE'] : '')
+$lang = ($http_langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
 $skindir='template/basic/';
@@ -14,7 +14,7 @@ session_sta();
 if((!isset($_SESSION['sns_api_session_id']))||(!isset($_SESSION['sns_api_val']))){
 	redirect("./") ;
 };
-$baseUrl = isset($_SESSION['misskey_server_radio']) ? $_SESSION['misskey_server_radio'] : "";
+$baseUrl = $_SESSION['misskey_server_radio'] ?? "";
 if(!filter_var($baseUrl,FILTER_VALIDATE_URL)){
 	error($en ? "This is not a valid server URL.":"サーバのURLが無効です。");
 }
@@ -66,7 +66,11 @@ class connect_misskey_api{
 			
 			global $en,$baseUrl,$root_url,$skindir,$boardname;
 			
-			$accessToken = isset($_SESSION['accessToken']) ? $_SESSION['accessToken'] : "";
+			$accessToken = $_SESSION['accessToken'] ?? "";
+
+			if(!$accessToken){
+				error($en ? "Authentication failed." :"認証に失敗しました。" ,false);
+			}
 
 			list($com,$picfile,$tool,$painttime,$hide_thumbnail,$cw,$show_tag) = $_SESSION['sns_api_val'];
 			$picfile=basename($picfile);
@@ -108,7 +112,7 @@ class connect_misskey_api{
 		// アップロードしたファイルのIDを取得
 
 		$responseData = json_decode($uploadResponse, true);
-		$fileId = isset($responseData['id']) ? $responseData['id']:'';
+		$fileId = $responseData['id'] ?? '';
 
 		if(!$fileId){
 			// var_dump($responseData);
