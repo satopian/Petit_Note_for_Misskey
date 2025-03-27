@@ -1,4 +1,12 @@
 @charset "utf-8";
+
+/* input type="number"のスピンボタンを消す */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
 /* 全体 */
 body {
 	margin: 10px;

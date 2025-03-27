@@ -10,18 +10,6 @@
 .appstage{margin:10px auto;display: table;word-break: initial;overflow-wrap: initial;}.app{display: table-cell;vertical-align: top; width: <?=h($appw)?>px;}.palette_wrap{display: table-cell;vertical-align: middle}.palette{margin-left:12px;width:148px;border:1px solid #666;padding:6px}.palette_gradation{margin:10px 0 0 12px;padding:6px}.palette input,.palette_gradation input{color:#555;background-color:#fffeff;border:1px solid #686868}.palette_hr{border:none}.palette_desc{font-family:Impact,Arial;font-size:14px}.palette_select{margin:2px 0;max-width: 100%;min-width: 130px;}.paintbbs_memo{margin:18px auto 18px;line-height:146%;min-width:180px;max-width:768px}.paintbbs_memo ul{margin:0;padding:0;}.paintbbs_memo li{list-style-type:circle;margin:6px 0;}.paintbbs_memo div{margin-bottom:15px}.applet_painttime{margin-top:15px}.continue_painttime{margin: 0 auto 8px;max-width:928px}.palette_type_select{height: 21px}
 .applet_painttime {text-align: center;}.bbs_title{max-width:928px;margin: 0 auto 5px}
 </style>
-<style>body{overscroll-behavior-x: none !important; }</style>
-<title><?=h($boardname)?></title> 
-<!-- NEOを使う -->
-<script>
-document.paintBBSCallback = function (str) {
-console.log('paintBBSCallback', str)
-if (str == 'check') {
-return true;
-}
-return;
-}
-</script>
 <!-- アプレットフィット -->
 <script>
 	function appfit(f) {
@@ -37,8 +25,8 @@ return;
 			document.getElementById("fit_exp").style.display="none";
 			document.getElementById("fit_comp").style.display="block";
 		} else if (f == 1) { //もどす
-		target.style.width = {{$w}} + "px";
-		target.style.height = {{$h}} + "px";
+		target.style.width = <?=h($picw)?> + "px";
+		target.style.height = <?=h($pich)?> + "px";
 		document.getElementById("fit_exp").style.display="block";
 		document.getElementById("fit_comp").style.display="none";
 		}
@@ -49,6 +37,18 @@ return;
 	Neo.resizeCanvas();
 	Neo.painter.updateDestCanvas();
 	}
+</script>
+<style>body{overscroll-behavior-x: none !important; }</style>
+<title><?=h($boardname)?></title> 
+<!-- NEOを使う -->
+<script>
+document.paintBBSCallback = function (str) {
+console.log('paintBBSCallback', str)
+if (str == 'check') {
+return true;
+}
+return;
+}
 </script>
 <link rel="stylesheet" href="./app/neo/neo.css?<?=h($parameter_day)?><?=h($petit_lot)?>">
 <script src="./app/neo/neo.js?<?=h($parameter_day)?><?=h($petit_lot)?>"></script>
@@ -115,6 +115,7 @@ a[c],b.p_st.options[c].style.color=e[c],b.p_ed.options[c].style.background=a[c],
 </script>
 <?php endif;?>
 <noscript><h3><?php if($en):?>Please enable JavaScript.<?php else:?>javascriptが有効でないため正常に動作致しません<?php endif;?></h3></noscript>
+<section id="appstage">
 <div class="appstage"><div class="app">
 <!-- NEOを使う時はアプレットを読み込まないように -->
 <applet-dummy CODE="pbbs.PaintBBS.class" ARCHIVE="./PaintBBS.jar" NAME="paintbbs" WIDTH="<?=h($appw)?>"
@@ -228,6 +229,7 @@ if(DynamicColor) PaletteListSetColor();
 </script>
 </div>
 </div>
+</section>
 <div class="centering">
 <div class="applet_painttime">
 <form name="watch"><?php if($en):?>Paint time<?php else:?>描画時間<?php endif;?> 
