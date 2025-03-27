@@ -22,6 +22,34 @@ return true;
 return;
 }
 </script>
+<!-- アプレットフィット -->
+<script>
+	function appfit(f) {
+		var d = document;
+		var client = d.compatMode && d.compatMode != "BackCompat" ? d.documentElement : d.body;
+		var chei = client.clientHeight - 10;
+		var neo = d.getElementById("NEO");
+		var target = d.getElementById("pageView");
+		if (f == 0) { //ひろげる
+			var cwid = d.getElementById("appstage").scrollWidth - 360;
+			if (cwid > target.clientWidth) { target.style.width = cwid + "px"; }
+			if (chei > target.clientHeight) { target.style.height = chei + "px"; }
+			document.getElementById("fit_exp").style.display="none";
+			document.getElementById("fit_comp").style.display="block";
+		} else if (f == 1) { //もどす
+		target.style.width = {{$w}} + "px";
+		target.style.height = {{$h}} + "px";
+		document.getElementById("fit_exp").style.display="block";
+		document.getElementById("fit_comp").style.display="none";
+		}
+	//ツールの縦の位置をキャンバス中央に修正
+	d.getElementById("toolsWrapper").style.top = (target.clientHeight - d.getElementById("toolsWrapper").clientHeight)/2 + "px";
+	//ズームをリセット
+	Neo.painter.setZoom(1);
+	Neo.resizeCanvas();
+	Neo.painter.updateDestCanvas();
+	}
+</script>
 <link rel="stylesheet" href="./app/neo/neo.css?<?=h($parameter_day)?><?=h($petit_lot)?>">
 <script src="./app/neo/neo.js?<?=h($parameter_day)?><?=h($petit_lot)?>"></script>
 </head>
@@ -123,34 +151,44 @@ a[c],b.p_st.options[c].style.color=e[c],b.p_ed.options[c].style.background=a[c],
 </applet-dummy>
 </div>
 <div class="palette_wrap">
-<div class="palette"><FORM name="Palette">
-<span class="palette_desc">PALETTE</span> <INPUT type="button" VALUE="<?php if($en):?>Save<?php else:?>一時保存<?php endif;?>" OnClick="PaletteSave()"><br>
+<div class="palette">
+<form name="Palette">
+<fieldset id="fit_exp">
+<legend>FIT!</legend>
+<input class="button" type="button" value="← FIT →" onclick="appfit(0)">
+</fieldset>
+<fieldset id="fit_comp" style="display: none;">
+<legend>FIT!</legend>
+<input class="button" type="button" value="→ FIT ←" onclick="appfit(1)">
+</fieldset>
+<span class="palette_desc">PALETTE</span>
+<input type="button" value="<?php if($en):?>Save<?php else:?>一時保存<?php endif;?>" OnClick="PaletteSave()"><br>
 <select name="select" size="<?=h($palsize)?>" onChange="setPalette()" class="palette_select">
 <option><?php if($en):?>saved palette<?php else:?>一時保存パレット<?php endif;?></option>
 <?php foreach($arr_dynp as $palname):?>
 	<option><?=h($palname)?></option>
 <?php endforeach;?>
 </select>
-<INPUT type="button" VALUE="<?php if($en):?>New<?php else:?>作成<?php endif;?>" OnClick="PaletteNew()">
-<INPUT type="button" VALUE="<?php if($en):?>Renew<?php else:?>変更<?php endif;?>" OnClick="PaletteRenew()">
-<INPUT type="button" VALUE="<?php if($en):?>Del<?php else:?>削除<?php endif;?>" OnClick="PaletteDel()"><br>
-<INPUT type="button" VALUE="<?php if($en):?>Brighten<?php else:?>明＋<?php endif;?>" OnClick="P_Effect(10)">
-<INPUT type="button" VALUE="<?php if($en):?>Darken<?php else:?>明－<?php endif;?>" OnClick="P_Effect(-10)">
-<INPUT type="button" VALUE="<?php if($en):?>Invert<?php else:?>反転<?php endif;?>" OnClick="P_Effect(255)">
+<input type="button" value="<?php if($en):?>New<?php else:?>作成<?php endif;?>" OnClick="PaletteNew()">
+<input type="button" value="<?php if($en):?>Renew<?php else:?>変更<?php endif;?>" OnClick="PaletteRenew()">
+<input type="button" value="<?php if($en):?>Del<?php else:?>削除<?php endif;?>" OnClick="PaletteDel()"><br>
+<input type="button" value="<?php if($en):?>Brighten<?php else:?>明＋<?php endif;?>" OnClick="P_Effect(10)">
+<input type="button" value="<?php if($en):?>Darken<?php else:?>明－<?php endif;?>" OnClick="P_Effect(-10)">
+<input type="button" value="<?php if($en):?>Invert<?php else:?>反転<?php endif;?>" OnClick="P_Effect(255)">
 <hr class="palette_hr"><span class="palette_desc">MATRIX</span>
-<SELECT name="m_m">
+<select name="m_m">
 <option value="0"><?php if($en):?>Overall<?php else:?>全体<?php endif;?></option>
 <option value="1"><?php if($en):?>Current<?php else:?>現在<?php endif;?></option>
 <option value="2"><?php if($en):?>Add<?php else:?>追加<?php endif;?></option>
-</SELECT><br>
-<INPUT name="m_g" type="button" VALUE="<?php if($en):?>Get<?php else:?>取得<?php endif;?>" OnClick="PaletteMatrixGet()">
-<INPUT name="m_s" type="button" VALUE="<?php if($en):?>Set<?php else:?>セット<?php endif;?>" OnClick="PalleteMatrixSet()">
-<INPUT name="m_h" type="button" VALUE=" ? " OnClick="PalleteMatrixHelp()"><br>
-<TEXTAREA rows="1" name="setr" cols="13" onMouseOver="this.select()"></TEXTAREA><br>
-</FORM></div>
-<div class="palette_gradation"><FORM name="grad">
-<label class="palette_desc checkbox" ><INPUT type="checkbox" name="view" OnClick="showHideLayer()" id="grdchk">GRADATION&nbsp;</label><INPUT type="button" VALUE=" OK " OnClick="ChengeGrad()"><br>
-<SELECT name="p_st" onChange="GetPalette()">
+</select><br>
+<input name="m_g" type="button" value="<?php if($en):?>Get<?php else:?>取得<?php endif;?>" OnClick="PaletteMatrixGet()">
+<input name="m_s" type="button" value="<?php if($en):?>Set<?php else:?>セット<?php endif;?>" OnClick="PalleteMatrixSet()">
+<input name="m_h" type="button" value=" ? " OnClick="PalleteMatrixHelp()"><br>
+<textarea rows="1" name="setr" cols="13" onMouseOver="this.select()"></textarea><br>
+</form></div>
+<div class="palette_gradation"><form name="grad">
+<label class="palette_desc checkbox" ><input type="checkbox" name="view" OnClick="showHideLayer()" id="grdchk">GRADATION&nbsp;</label><input type="button" VALUE=" OK " OnClick="ChengeGrad()"><br>
+<select name="p_st" onChange="GetPalette()">
 <option>1</option>
 <option>2</option>
 <option>3</option>
@@ -165,8 +203,9 @@ a[c],b.p_st.options[c].style.color=e[c],b.p_ed.options[c].style.background=a[c],
 <option>12</option>
 <option>13</option>
 <option>14</option>
-</SELECT><input type="text" name="pst" size="8" onKeyPress="Chenge_()" onChange="Chenge_()"><br>
-<SELECT name="p_ed" onChange="GetPalette()">
+</select>
+<input type="text" name="pst" size="8" onKeyPress="Chenge_()" onChange="Chenge_()"><br>
+<select name="p_ed" onChange="GetPalette()">
 <option>1</option>
 <option>2</option>
 <option>3</option>
@@ -181,12 +220,12 @@ a[c],b.p_st.options[c].style.color=e[c],b.p_ed.options[c].style.background=a[c],
 <option selected>12</option>
 <option>13</option>
 <option>14</option>
-</SELECT><input type="text" name="ped" size="8" onKeyPress="Chenge_()" onChange="Chenge_()">
+</select><input type="text" name="ped" size="8" onKeyPress="Chenge_()" onChange="Chenge_()">
 <div id="psft"></div>
-</FORM></div>
-<Script>
+</form></div>
+<script>
 if(DynamicColor) PaletteListSetColor();
-</Script>
+</script>
 </div>
 </div>
 <div class="centering">
@@ -194,10 +233,10 @@ if(DynamicColor) PaletteListSetColor();
 <form name="watch"><?php if($en):?>Paint time<?php else:?>描画時間<?php endif;?> 
 <input type="text" size="20" name="count" class="input_count_timer" readonly>
 </form>
-<Script>
+<script>
 timerID=10;stime=new Date;function SetTimeCount(){now=new Date;s=Math.floor((now.getTime()-stime.getTime())/1E3);disp="";86400<=s&&(d=Math.floor(s/86400),disp+=d+"<?php if($en):?>day <?php else:?>\u65e5<?php endif;?>",s-=86400*d);3600<=s&&(h=Math.floor(s/3600),disp+=h+"<?php if($en):?>hr <?php else:?>\u6642\u9593<?php endif;?>",s-=3600*h);60<=s&&(m=Math.floor(s/60),disp+=m+"<?php if($en):?>min <?php else:?>\u5206<?php endif;?>",s-=60*m);document.watch.count.value=disp+s+"<?php if($en):?>sec<?php else:?>\u79d2<?php endif;?>";clearTimeout(timerID);timerID = setTimeout(()=>{ SetTimeCount(); }, 250);};
 document.addEventListener('DOMContentLoaded',SetTimeCount,false);
-</Script>
+</cript>
 </div>
 </div>
 <!--PaintBBS HELP START-->
