@@ -1,5 +1,5 @@
 <?php
-$functions_ver=20250310;
+$functions_ver=20250327;
 //編集モードログアウト
 function logout(): void {
 	session_sta();
@@ -143,7 +143,7 @@ function admin_in(): void {
 	$adminpost=adminpost_valid();
 	if(!$use_aikotoba){
 		$aikotoba=true;
-	}	
+	}
 
 	$page= $_SESSION['current_page_context']["page"] ?? 0;
 	$resno= $_SESSION['current_page_context']["resno"] ?? 0;
