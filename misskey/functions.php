@@ -2,17 +2,11 @@
 $functions_ver=20250310;
 //編集モードログアウト
 function logout(): void {
-	$resno=(int)filter_input_data('GET','resno',FILTER_VALIDATE_INT);
 	session_sta();
 	unset($_SESSION['admindel']);
 	unset($_SESSION['userdel']);
-	if($resno){
-		redirect('./?resno='.$resno);
-	}
-	$page=(int)filter_input_data('POST','page',FILTER_VALIDATE_INT);
-	$page= $page ? $page : (int)filter_input_data('GET','page',FILTER_VALIDATE_INT);
 
-	redirect('./?page='.$page);
+	branch_destination_of_location();
 }
 //管理者モードログアウト
 function logout_admin(): void {
@@ -59,7 +53,6 @@ function aikotoba_required_to_view($required_flag=false): void {
 	if($page<0||$resno<0){//負の値の時はトップページにリダイレクト
 		redirect("./");
 	}
-
 	//先に年齢確認を行う
 	age_check_required_to_view();
 
@@ -77,7 +70,23 @@ function aikotoba_required_to_view($required_flag=false): void {
 		exit();//return include では処理が止まらない。 
 	}
 }
-
+//ページのコンテキストをセッションに保存
+function set_page_context_to_session(){
+	session_sta();
+	// セッションに保存
+	$_SESSION['current_page_context'] = [
+		'page' => (int)filter_input_data('GET', 'page', FILTER_VALIDATE_INT),
+		'resno' => filter_input_data('GET', 'resno', FILTER_VALIDATE_INT),//未設定時はnull。intでキャストしない事。
+		'catalog' => (bool)(filter_input_data('GET', 'mode')==='catalog'),
+		'res_catalog' => (bool)filter_input_data('GET', 'res_catalog', FILTER_VALIDATE_BOOLEAN),
+		'misskey_note' => (bool)filter_input_data('GET', 'misskey_note', FILTER_VALIDATE_BOOLEAN),
+		'search' => (bool)(filter_input_data('GET', 'mode')==='search'),
+		'radio' => (int)filter_input_data('GET', 'radio', FILTER_VALIDATE_INT),
+		'imgsearch' => (bool)filter_input_data('GET', 'imgsearch', FILTER_VALIDATE_BOOLEAN),
+		'q' => (string)filter_input_data('GET', 'q'),
+	];
+	$_SESSION['current_id'] = null;
+}
 // 年齢確認ボタン押下でCookieを発行
 function age_check(): void {
 
@@ -123,31 +132,27 @@ function admin_in(): void {
 
 	aikotoba_required_to_view();
 
-	$page=(int)filter_input_data('GET','page',FILTER_VALIDATE_INT);
-	$resno=(int)filter_input_data('GET','resno',FILTER_VALIDATE_INT);
-	if($page<0||$resno<0){//負の値の時はトップページにリダイレクト
-		redirect('./');
-	}
-	$catalog=(bool)filter_input_data('GET','catalog',FILTER_VALIDATE_BOOLEAN);
-	$res_catalog=(bool)filter_input_data('GET','res_catalog',FILTER_VALIDATE_BOOLEAN);
-	$search=(bool)filter_input_data('GET','search',FILTER_VALIDATE_BOOLEAN);
-	$radio=(int)filter_input_data('GET','radio',FILTER_VALIDATE_INT);
-	$imgsearch=(bool)filter_input_data('GET','imgsearch',FILTER_VALIDATE_BOOLEAN);
-	$q=(string)filter_input_data('GET','q');
+	//古いテンプレート用の使用しない変数
+	$page = $resno = $catalog = $res_catalog = $search= $radio= $imgsearch= $q ="";
 
 	session_sta();
+
 	$admindel=admindel_valid();
 	$aikotoba=aikotoba_valid();
 	$userdel=isset($_SESSION['userdel'])&&($_SESSION['userdel']==='userdel_mode');
 	$adminpost=adminpost_valid();
 	if(!$use_aikotoba){
 		$aikotoba=true;
-	}
+	}	
+
+	$page= $_SESSION['current_page_context']["page"] ?? 0;
+	$resno= $_SESSION['current_page_context']["resno"] ?? 0;
+	$id = $_SESSION['current_id']	?? "";
+
 	$admin_pass= null;
 	// HTML出力
 	$templete='admin_in.html';
 	include __DIR__.'/'.$skindir.$templete;
-	
 }
 //合言葉を再確認	
 function check_aikotoba(): bool {
@@ -203,14 +208,9 @@ function admin_del(): void {
 function userdel_mode(): void {
 
 	session_sta();
-
-	$page=(int)filter_input_data('GET','page',FILTER_VALIDATE_INT);
 	$_SESSION['userdel']='userdel_mode';
-	$resno=(int)filter_input_data('GET','resno',FILTER_VALIDATE_INT);
-	if($resno){
-		redirect('./?resno='.$resno);
-	}
-	redirect('./?page='.$page);
+
+	branch_destination_of_location();
 }
 
 //sessionの確認
@@ -253,9 +253,9 @@ function set_nsfw_show_hide(): void {
 
 	$view=(bool)filter_input_data('POST','set_nsfw_show_hide');
 	if($view){
-		setcookie("p_n_set_nsfw_show_hide",true,time()+(60*60*24*365),"","",false,true);
+		setcookie("p_n_set_nsfw_show_hide","1",time()+(60*60*24*365),"","",false,true);
 	}else{
-		setcookie("p_n_set_nsfw_show_hide",false,time()+(60*60*24*365),"","",false,true);
+		setcookie("p_n_set_nsfw_show_hide","0",time()+(60*60*24*365),"","",false,true);
 	}
 }
 function set_darkmode(): void {
@@ -270,34 +270,51 @@ function set_darkmode(): void {
 
 //ログイン・ログアウト時のLocationを分岐
 function branch_destination_of_location(): void {
-	$page=(int)filter_input_data('POST','postpage',FILTER_VALIDATE_INT);
-	$resno=(int)filter_input_data('POST','resno',FILTER_VALIDATE_INT);
-	$resno= $resno ? $resno : (int)filter_input_data('POST','postresno',FILTER_VALIDATE_INT);
-	$catalog=(bool)filter_input_data('POST','catalog',FILTER_VALIDATE_BOOLEAN);
-	$search=(bool)filter_input_data('POST','search',FILTER_VALIDATE_BOOLEAN);
 	$paintcom=(bool)filter_input_data('POST','paintcom',FILTER_VALIDATE_BOOLEAN);
-	$res_catalog=(bool)filter_input_data('POST','res_catalog',FILTER_VALIDATE_BOOLEAN);
-
 	if($paintcom){
 		location_paintcom();
 	}
+
+	session_sta();
+	// セッションの値を変数に展開（安全な方法）
+	$page_contexts = $_SESSION['current_page_context'] ?? [];
+	foreach ($page_contexts as $key => $value) {
+		if (in_array($key, ['page', 'resno', 'catalog', 'res_catalog', 'misskey_note' , 'search', 'radio', 'imgsearch', 'q'])) {
+			$$key = $value; // 変数の動的作成
+		}
+	}
+
+	$page = $page ?? 0;
+	$resno = $resno ?? 0;
+	$catalog = $catalog ?? false;
+	$res_catalog = $res_catalog ?? false;
+	$misskey_note = $misskey_note ?? false;
+	$search = $search ??	false;
+	$radio = $radio ?? 0;
+	$imgsearch = $imgsearch ?? false;
+	$q = $q ?? '';
+
 	if($resno){
 		if(!is_file(LOG_DIR.$resno.'.log')){
 			redirect('./');
 		}
-		$res_catalog = $res_catalog ? '&res_catalog=on' : ''; 
-		redirect('./?resno='.h($resno).$res_catalog);
+		$id = $_SESSION['current_id'] ?? "";//intの範囲外
+		$id = ctype_digit($id) ? $id : "";
+		$res_param = $res_catalog ? '&res_catalog=on' : ($misskey_note ? '&misskey_note=on' : '');
+		$res_param .= $id ? "&resid={$id}#{$id}" : '';
+		
+		redirect('./?resno='.h($resno).$res_param);
 	}
 	if($catalog){
 		redirect('./?mode=catalog&page='.h($page));
 	}
 	if($search){
-		$radio=(int)filter_input_data('POST','radio',FILTER_VALIDATE_INT);
-		$imgsearch=(bool)filter_input_data('POST','imgsearch',FILTER_VALIDATE_BOOLEAN);
-		$imgsearch=$imgsearch ? 'on' : 'off';
-		$q=(string)filter_input_data('POST','q');
 		
 		redirect('./?mode=search&page='.h($page).'&imgsearch='.h($imgsearch).'&q='.h($q).'&radio='.h($radio));
+	}
+	//ここまでに別処理がなければ通常ページ
+	if($page<0){//負の値の時はトップページにリダイレクト
+		redirect('./');
 	}
 	redirect('./?page='.h($page));
 }
@@ -497,7 +514,7 @@ function create_chk_lins($chk_log_arr,$resno): array {
 
 	$chk_resnos=[];
 	foreach($chk_log_arr as $chk_log){
-		list($chk_resno)=explode("\t",$chk_log);
+		list($chk_resno)=explode("\t",$chk_log,2);
 		$chk_resnos[]=$chk_resno;
 	}
 	$chk_lines=[];
@@ -838,6 +855,8 @@ function error($str,$historyback=true): void {
 
 	global $boardname,$skindir,$en,$aikotoba_required_to_view,$petit_lot;
 
+	$petit_lot = $petit_lot ?? time();
+
 	$asyncflag = (bool)filter_input_data('POST','asyncflag',FILTER_VALIDATE_BOOLEAN);
 	$http_x_requested_with= (bool)(isset($_SERVER['HTTP_X_REQUESTED_WITH']));
 	if($http_x_requested_with||$asyncflag){
@@ -847,7 +866,6 @@ function error($str,$historyback=true): void {
 	$boardname = ($aikotoba_required_to_view && !aikotoba_valid()) ? '' : $boardname; 
 
 	$admin_pass= null;
-
 	$templete='error.html';
 	include __DIR__.'/'.$skindir.$templete;
 	exit();
@@ -1165,7 +1183,7 @@ function writeFile ($fp, $data): void {
 function closeFile ($fp): void {
 	if($fp){
 		fflush($fp);
-		flock($fp, LOCK_UN);
+		file_lock($fp, LOCK_UN);
 		fclose($fp);
 	}
 }
@@ -1492,6 +1510,19 @@ function post_share_server(): void {
 		error($en ? "Please select an SNS sharing destination.":"SNSの共有先を選択してください。");
 	}
 	redirect($share_url);
+}
+//flockのラッパー関数
+function file_lock($fp, int $lock, array $options=[]): void {
+	global $en;
+	$flock=flock($fp, $lock);
+	if (!$flock) {
+			if($lock !== LOCK_UN){
+				if(isset($options['paintcom'])){
+					location_paintcom();//未投稿画像の投稿フォームへ
+				}
+				error($en ? 'Failed to lock the file.' : 'ファイルのロックに失敗しました。');
+		}
+	}
 }
 //filter_input のラッパー関数
 function filter_input_data(string $input, string $key, int $filter=0) {
