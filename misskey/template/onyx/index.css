@@ -12,10 +12,10 @@ body {
 	margin: 10px;
 }
 body,td {
-	color: #555;
+	color: #EEE;
 	overflow-wrap: anywhere;
 	font-family: "Hiragino Sans", meiryo, ヒラギノ角ゴシック, メイリオ, sans-serif;
-	background-color: #fff;
+	background-color: #343;
 }
 
 .container {
@@ -24,7 +24,7 @@ body,td {
 }
 hr {
 	border: none;
-	border-bottom: 1px dashed #888;
+	border-bottom: 1px dashed #686;
 	}
 
 ul {
@@ -40,7 +40,7 @@ ul {
 	
 /* リンク */
 a {
-	color: #555;
+	color: #AAF;
 	}
 	
 a:hover{
@@ -60,9 +60,9 @@ h1.title a {
 
 h2 {
 	font-size: 18px;
-	background-color: #ffe6e6;
-	border-left: 8px solid #ffcfcf;
-	border-bottom: 1px dashed #888;
+	background-color: #454;
+	border-left: 8px solid #676;
+	border-bottom: 1px dashed #343;
 	padding: 2px 6px 2px;
 	margin: 8px 0;
 }
@@ -132,12 +132,12 @@ span#paintcom_hide_animation {
 
 span.info_name {
     display: inline-block;
-    border: 1px solid #ffcfcf;
+    border: 1px solid #454;
     border-radius: 5px;
     line-height: 1;
     margin: 0 2px 2px 0px;
 }
-span.info_name:hover {background-color: #fff7f7;}
+span.info_name:hover {background-color: #343;}
 span.info_name a {
     display: block;
     padding: 5px;
@@ -167,7 +167,7 @@ span.info_name a {
 }
 
 .article_info{
-	margin: 5px 0 ;	
+	margin: 5px 0 ;
 }
 .posted_image {
 	max-width: 100%;
@@ -183,8 +183,8 @@ span.info_name a {
     top: 0;
     left: 13px;
     display: inline-block;
-    background-color: #555;
-    color: white;
+    background-color: #777;
+    color: #232;
     padding: 3px;
     border-radius: 5px;
     font-weight: 600;
@@ -226,12 +226,12 @@ span.share_button {
 button.copy_button {
     background-color: transparent;
     border-radius: 6px;
-    border: 1px solid #ffcfcf;
-    color: #555;
+    border: 1px solid #454;
+    color: #EEE;
 }
 
 button.copy_button:hover {
-    background-color: #fff7f7;
+    background-color: #343;
 }
 
 /* メニューのラップ */
@@ -268,7 +268,7 @@ label {
 }
 
 .form_radio_sns_server label:hover{
-	background-color: #ffe6e6;
+	background-color: #343;
 }
 
 input[type="checkbox"]:checked + label{background-color: #ffe6e6;font-weight: 600;}
@@ -451,7 +451,7 @@ span.continue_menu {
 
 /* NSFW表示ボタン */
 .view_nsfw {
-    background-color: #ffe6e6;
+    background-color: #343;
     padding: 10px;
     line-height: 2;
 }
@@ -537,7 +537,7 @@ span.continue_menu {
 	position: fixed;
 	right: 0;
 	bottom: 50px;
-	background: #ffcfcf;
+	background: #343;
 	opacity: .6;
 	border-radius: 50%
 }
@@ -553,7 +553,7 @@ span.continue_menu {
 #page_top a::before {
 	font-weight: 900;
 	font-size: 25px;
-	color: #fff;
+	color: #343;
 	position: absolute;
 	width: 25px;
 	height: 25px;
@@ -582,4 +582,43 @@ div#error_message , div#error_message_imgrep , div#error_message_paintform , div
 }
 div#error_message:empty , div#error_message_imgrep:empty , div#error_message_paintform:empty , div#error_message_download:empty , div#error_message_beforedelete:empty {
 	display: none;
+}
+
+/* neo */
+
+.NEO .color_bk {
+  color: #999;
+}
+.NEO .color_bk2 {
+  color: #567;
+}
+.NEO .color_tool_icon {
+  color: #444;
+}
+.NEO .color_icon {
+  color: #333;
+}
+.NEO .color_iconselect {
+  color: #333;
+}
+.NEO .color_text {
+  color: #FFF;
+}
+.NEO .color_bar {
+  color: #666;
+}
+.NEO .tool_color_button {
+  color: #778;
+}
+.NEO .tool_color_button2 {
+  color: #445;
+}
+.NEO .tool_color_text {
+  color: #FFF;
+}
+.NEO .tool_color_bar {
+  color: #89A;
+}
+.NEO .tool_color_frame {
+  color: #666;
 }

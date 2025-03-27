@@ -16,7 +16,7 @@ $second_pass = "yNhUFapFrTY4ETi";
 $boardname = "Misskey専用お絵かき掲示板";
 
 //ホームページ(掲示板からの戻り先)
-$home = "https://example.com/"; //相対パス、絶対パス、URLどれでもOK 
+$home = "https://example.com/"; //相対パス、絶対パス、URLどれでもOK
 
 //MisskeyのAPIを使うために必要
 // 設置場所のurl `/`まで。
@@ -24,7 +24,7 @@ $root_url = "http://example.com/misskey/";
 
 /*テンプレート切り替え*/
 //テンプレートのディレクトリ`/`まで 初期値 "basic/"
-$skindir="basic/";
+$skindir="onyx/";
 
 /*掲示板の説明文*/
 
@@ -139,6 +139,7 @@ $misskey_servers=
 [
 
 	["misskey.io","https://misskey.io"],
+	["xissmie.xfolio.jp","https://xissmie.xfolio.jp"],
 	["misskey.design","https://misskey.design"],
 	["nijimiss.moe","https://nijimiss.moe"],
 	["misskey.art","https://misskey.art"],
