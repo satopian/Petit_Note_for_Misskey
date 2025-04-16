@@ -1,5 +1,5 @@
 <?php
-$functions_ver=20250327;
+$functions_ver=20250416;
 //編集モードログアウト
 function logout(): void {
 	session_sta();
@@ -29,7 +29,7 @@ function aikotoba(): void {
 			unset($_SESSION['aikotoba']);
 		}
 		if((string)filter_input_data('COOKIE','aikotoba')){
-			setcookie('aikotoba', '', time() - 3600);
+			setcookie('aikotoba', '', time() - 3600);//クッキーを削除
 		} 
 		error($en?'The secret word is wrong':'合言葉が違います。');
 	}
@@ -898,11 +898,12 @@ function session_sta(): void {
 	global $session_name;
 
 	$session_name = $session_name ?? 'session_petit';
+	$httpsonly = (bool)($_SERVER['HTTPS'] ?? '');
 
 	if(!isset($_SESSION)){
 		ini_set('session.use_strict_mode', 1);
 		session_set_cookie_params(
-			0,"","",false,true
+			0,"","",$httpsonly,true
 		);
 		session_name($session_name);
 		session_start();
@@ -1174,6 +1175,11 @@ return $msg;
 
 // 一括書き込み（上書き）
 function writeFile ($fp, $data): void {
+	global $en;
+	if($data === ''){
+		closeFile($fp);
+		error($en ? 'Log write failed.' : 'ログの書き込みに失敗しました。');
+	}
 	ftruncate($fp,0);
 	rewind($fp);
 	stream_set_write_buffer($fp, 0);
