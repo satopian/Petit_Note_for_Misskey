@@ -1,5 +1,5 @@
 <?php
-$functions_ver=20250416;
+$functions_ver=20250522;
 //編集モードログアウト
 function logout(): void {
 	session_sta();
@@ -123,7 +123,7 @@ function age_check_required_to_view(): void {
 function is_adminpass($pwd): bool {
 	global $admin_pass,$second_pass;
 	$pwd=(string)$pwd;
-	return ($admin_pass && $pwd && $second_pass !== $admin_pass && $pwd === $admin_pass);
+	return ($pwd && $admin_pass && $second_pass && !hash_equals($second_pass,$admin_pass) && hash_equals($pwd,$admin_pass));
 }
 
 function admin_in(): void {
@@ -217,12 +217,12 @@ function userdel_mode(): void {
 function adminpost_valid(): bool {
 	global $second_pass;
 	session_sta();
-	return isset($_SESSION['adminpost'])&&($second_pass && $_SESSION['adminpost']===$second_pass);
+	return isset($_SESSION['adminpost']) && ($second_pass && hash_equals($_SESSION['adminpost'],$second_pass));
 }
 function admindel_valid(): bool {
 	global $second_pass;
 	session_sta();
-	return isset($_SESSION['admindel'])&&($second_pass && $_SESSION['admindel']===$second_pass);
+	return isset($_SESSION['admindel']) && ($second_pass && hash_equals($_SESSION['admindel'],$second_pass));
 }
 function userdel_valid(): bool {
 	session_sta();
@@ -889,7 +889,8 @@ function check_csrf_token(): void {
 	session_sta();
 	$token=(string)filter_input_data('POST','token');
 	$session_token=isset($_SESSION['token']) ? (string)$_SESSION['token'] : '';
-	if(!$session_token||$token!==$session_token){
+
+	if(!$token||!$session_token||!hash_equals($token,$session_token)){//タイミング攻撃対策としてhash_equals()を使用
 		error($en?"CSRF token mismatch.\nPlease reload.":"CSRFトークンが一致しません。\nリロードしてください。");
 	}
 }
@@ -961,6 +962,15 @@ function check_AsyncRequest($upfile=''): void {
 	if(!$paint_picrep && ($http_x_requested_with || $asyncflag)){//非同期通信ならエラーチェックだけすませて処理中断。通常フォームでやりなおし。
 		safe_unlink($upfile);
 		exit();
+	}
+}
+
+//POSTがJavaScript経由かチェック
+function check_post_via_javascript(): void {
+	global $en;
+	//JavaScriptが無効な時はエラー
+		if(!isset($_SERVER['HTTP_X_REQUESTED_WITH'])){//asyncリクエストでなければ
+		error($en?'Please enable JavaScript.':'JavaScriptを有効にしてください。');
 	}
 }
 
