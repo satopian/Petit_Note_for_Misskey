@@ -1,5 +1,5 @@
 <?php
-$functions_ver=20250522;
+$functions_ver=20250601;
 //編集モードログアウト
 function logout(): void {
 	session_sta();
@@ -149,6 +149,9 @@ function admin_in(): void {
 	$resno= $_SESSION['current_page_context']["resno"] ?? 0;
 	$id = $_SESSION['current_id']	?? "";
 
+	//フォームの表示時刻をセット
+	set_form_display_time();
+
 	$admin_pass= null;
 	// HTML出力
 	$templete='admin_in.html';
@@ -166,7 +169,14 @@ function check_aikotoba(): bool {
 function adminpost(): void {
 	global $second_pass,$en;
 
+	//Fetch API以外からのPOSTを拒否
+	check_post_via_javascript();
+	
 	check_same_origin();
+
+	//投稿間隔をチェック
+	check_submission_interval();
+
 	check_password_input_error_count();
 	session_sta();
 	if(!is_adminpass(filter_input_data('POST','adminpass'))){
@@ -187,7 +197,14 @@ function adminpost(): void {
 function admin_del(): void {
 	global $second_pass,$en;
 
+	//Fetch API以外からのPOSTを拒否
+	check_post_via_javascript();
+	
 	check_same_origin();
+
+	//投稿間隔をチェック
+	check_submission_interval();
+
 	check_password_input_error_count();
 
 	session_sta();
@@ -309,7 +326,6 @@ function branch_destination_of_location(): void {
 		redirect('./?mode=catalog&page='.h($page));
 	}
 	if($search){
-		
 		redirect('./?mode=search&page='.h($page).'&imgsearch='.h($imgsearch).'&q='.h($q).'&radio='.h($radio));
 	}
 	//ここまでに別処理がなければ通常ページ
@@ -388,6 +404,8 @@ function create_res($line,$options=[]): array {
 
 	$isset_catalog = isset($options['catalog']);
 	$isset_search = isset($options['search']);
+	$is_badhost = $options['is_badhost'] ?? false;
+	
 	$res=[];
 
 	$continue = true;
@@ -448,7 +466,7 @@ function create_res($line,$options=[]): array {
 		'upload_image' => $upload_image,
 		'pchext' => $pchext,
 		'anime' => $anime,
-		'continue' => $check_elapsed_days ? $continue : (adminpost_valid() ? $continue : false),
+		'continue' => ($check_elapsed_days && !$is_badhost) ? $continue : (adminpost_valid() ? $continue : false),
 		'time' => $time,
 		'date' => $date,
 		'datetime' => $datetime,
@@ -974,6 +992,32 @@ function check_post_via_javascript(): void {
 	}
 }
 
+//フォームの表示時刻をセット
+function set_form_display_time(): void {
+	session_sta();
+	$_SESSION['form_display_time'] = time();
+}
+//投稿間隔をチェック
+function check_submission_interval(): void {
+	global $en;
+
+	$mode = (int)filter_input_data('POST', 'mode',FILTER_VALIDATE_INT);
+	$pictmp = (int)filter_input_data('POST', 'pictmp',FILTER_VALIDATE_INT);//お絵かきコメントなら2になる
+	// デフォルトで最低2秒の間隔を設ける
+	$min_interval = ($mode==='regist' && $pictmp===2) ? 1 : 2; // お絵かきコメント以外の投稿は2秒待機
+
+	session_sta();
+	if (!isset($_SESSION['form_display_time'])) {
+		error($en?"The post has been rejected.":'拒絶されました。');
+	}
+	$form_display_time = $_SESSION['form_display_time'];
+	$now = time();
+
+	if (($now - $form_display_time) < $min_interval) {
+		set_form_display_time();
+		error($en? 'Please wait a little.':'少し待ってください。');
+	}
+}
 // テンポラリ内のゴミ除去 
 function deltemp(): void {
 	global $check_password_input_error_count;
@@ -1012,6 +1056,10 @@ function deltemp(): void {
 function Reject_if_NGword_exists_in_the_post(): void {
 	global $use_japanesefilter,$badstring,$badname,$badurl,$badstr_A,$badstr_B,$allow_comments_url,$max_com,$en;
 
+	if(is_badhost()){
+		error($en?'Post was rejected.':'拒絶されました。');
+	}
+
 	$admin =(adminpost_valid()||admindel_valid());
 
 	$name = t(filter_input_data('POST','name'));
@@ -1022,9 +1070,6 @@ function Reject_if_NGword_exists_in_the_post(): void {
 
 	if($admin || is_adminpass($pwd)){
 		return;
-	}
-	if(is_badhost()){
-		error($en?'Post was rejected.':'拒絶されました。');
 	}
 
 	$com_len=strlen((string)$com);
@@ -1104,12 +1149,15 @@ function is_ngword ($ngwords, $strs): bool {
 
 /* 禁止ホストチェック */
 function is_badhost(): bool {
-	global $badhost;
+	global $badhost,$reject_if_no_reverse_dns;
 	//ホスト取得
 	$userip = get_uip();
 	$host = $userip ? gethostbyaddr($userip) :'';
 
 	if($host === $userip){//ホスト名がipアドレスになる場合は
+		if($reject_if_no_reverse_dns){
+			return true; //リバースDNSがない場合は拒絶
+		}
 		foreach($badhost as $value){
 			if (preg_match("/\A$value/i",$host)) {//前方一致
 				return true;
