@@ -1,5 +1,5 @@
 <?php
-$functions_ver=20250604;
+$functions_ver=20250608;
 //編集モードログアウト
 function logout(): void {
 	session_sta();
@@ -364,6 +364,7 @@ function check_cont_pass(): void {
 
 	global $en;
 
+	check_submission_interval();
 	check_same_origin();
 
 	$adminmode = adminpost_valid() || admindel_valid(); 
@@ -1011,24 +1012,27 @@ function check_post_via_javascript(): void {
 //フォームの表示時刻をセット
 function set_form_display_time(): void {
 	session_sta();
-	$_SESSION['form_display_time'] = time();
+	$_SESSION['form_display_time'] = microtime(true);
 }
 //投稿間隔をチェック
 function check_submission_interval(): void {
 	global $en;
 
-	$mode = (int)filter_input_data('POST', 'mode',FILTER_VALIDATE_INT);
-	$pictmp = (int)filter_input_data('POST', 'pictmp',FILTER_VALIDATE_INT);//お絵かきコメントなら2になる
-	// デフォルトで最低2秒の間隔を設ける
-	$min_interval = ($mode==='regist' && $pictmp===2) ? 1 : 2; // お絵かきコメント以外の投稿は2秒待機
+	// 1.2秒の間隔を設ける
+	$min_interval = 1.2;//1.2秒待機
 
 	session_sta();
 	if (!isset($_SESSION['form_display_time'])) {
 		error($en?"The post has been rejected.":'拒絶されました。');
 	}
 	$form_display_time = $_SESSION['form_display_time'];
-	$now = time();
 
+	$now = microtime(true);
+
+	$admin = (admindel_valid() || adminpost_valid());
+	if($admin){
+		return;
+	}
 	if (($now - $form_display_time) < $min_interval) {
 		set_form_display_time();
 		error($en? 'Please wait a little.':'少し待ってください。');
@@ -1487,6 +1491,34 @@ function get_pch_size($src): ?array {
 		return null;
 	}
 	return[(int)$width,(int)$height];
+}
+
+// ini_getで取得したサイズ文字列をMBに変換
+function ini_get_size_mb(string $key): int {
+	if (!function_exists('ini_get')) return 0;
+
+	$val = ini_get($key);
+	$unit = strtoupper(substr($val, -1));
+	$num = (float)$val;
+
+	switch ($unit) {
+			case 'G':
+					return (int)($num * 1024);	// GB → MB
+			case 'M':
+					return (int)$num;						// MB → MB
+			case 'K':
+					return (int)($num / 1024);	// KB → MB
+			case 'B':
+					return (int)($num / 1024 / 1024);	// バイト → MB
+			default:
+					return (int)((float)$val / 1024 / 1024); // 単位なし → バイトとして処理
+	}
+}
+//投稿可能な最大ファイルサイズを取得 単位MB
+function get_upload_max_filesize(): int {
+	$upload_max = ini_get_size_mb('upload_max_filesize');
+	$post_max = ini_get_size_mb('post_max_size');
+	return min($upload_max, $post_max);
 }
 
 //使用するペイントアプリの配列化
