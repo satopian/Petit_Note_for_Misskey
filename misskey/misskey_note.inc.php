@@ -156,7 +156,10 @@ class misskey_note{
 			curl_setopt($postCurl, CURLOPT_RETURNTRANSFER, true);
 			$postResponse = curl_exec($postCurl);
 			$postStatusCode = curl_getinfo($postCurl, CURLINFO_HTTP_CODE); // HTTPステータスコードを取得
-			curl_close($postCurl);
+
+			if(PHP_VERSION_ID < 80000) {//PHP8.0未満の時は
+				curl_close($postCurl);
+			}
 	
 			// HTTPステータスコードが403の時は、トークン不一致と判断しアプリを認証
 			if ($postStatusCode === 403) {
