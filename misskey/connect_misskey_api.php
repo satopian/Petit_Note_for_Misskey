@@ -16,7 +16,7 @@ if((!isset($_SESSION['sns_api_session_id']))||(!isset($_SESSION['sns_api_val']))
 };
 $baseUrl = $_SESSION['misskey_server_radio'] ?? "";
 if(!filter_var($baseUrl,FILTER_VALIDATE_URL)){
-	error($en ? "This is not a valid server URL.":"サーバのURLが無効です。");
+	error($en ? "This is not a valid server URL.":"サーバのURLが無効です。" ,false);
 }
 
 $skip_auth_check = (bool)filter_input_data('GET','skip_auth_check',FILTER_VALIDATE_BOOLEAN);
@@ -34,7 +34,7 @@ connect_misskey_api::miauth_check();
 class connect_misskey_api{
 
 	public static function miauth_check(): void {
-		global $en,$baseUrl,$skindir,$boardname;
+		global $en,$baseUrl;
 		$sns_api_session_id = $_SESSION['sns_api_session_id'];
 		$checkUrl = $baseUrl . "/api/miauth/{$sns_api_session_id}/check";
 
@@ -46,15 +46,16 @@ class connect_misskey_api{
 		curl_setopt($checkCurl, CURLOPT_RETURNTRANSFER, true);
 		
 		$checkResponse = curl_exec($checkCurl);
-		curl_close($checkCurl);
-		
+		if(PHP_VERSION_ID < 80000) {//PHP8.0未満の時は
+			curl_close($checkCurl);
+		}
 		if (!$checkResponse) {
-			error($en ? "Authentication failed." :"認証に失敗しました。");	
+			error($en ? "Authentication failed." :"認証に失敗しました。" ,false);	
 		}
 		
 		$responseData = json_decode($checkResponse, true);
 		if(!isset($responseData['token'])){
-			error($en ? "Authentication failed." :"認証に失敗しました。");
+			error($en ? "Authentication failed." :"認証に失敗しました。",false);
 		}
 		$accessToken = $responseData['token'];
 		$_SESSION['accessToken']=$accessToken;
@@ -102,11 +103,13 @@ class connect_misskey_api{
 		curl_setopt($uploadCurl, CURLOPT_RETURNTRANSFER, true);
 		$uploadResponse = curl_exec($uploadCurl);
 		$uploadStatusCode = curl_getinfo($uploadCurl, CURLINFO_HTTP_CODE);
-		curl_close($uploadCurl);
+		if(PHP_VERSION_ID < 80000) {//PHP8.0未満の時は
+			curl_close($uploadCurl);
+		}
 		// var_dump($uploadResponse);
 		if (!$uploadResponse) {
 			// var_dump($uploadResponse);
-			error($en ? "Failed to upload the image." : "画像のアップロードに失敗しました。" );
+			error($en ? "Failed to upload the image." : "画像のアップロードに失敗しました。" ,false);
 		}
 
 		// アップロードしたファイルのIDを取得
@@ -116,7 +119,7 @@ class connect_misskey_api{
 
 		if(!$fileId){
 			// var_dump($responseData);
-			error($en ? "Failed to upload the image." : "画像のアップロードに失敗しました。" );
+			error($en ? "Failed to upload the image." : "画像のアップロードに失敗しました。" ,false);
 		}
 
 		// ファイルの更新
@@ -140,10 +143,11 @@ class connect_misskey_api{
 		curl_setopt($updateCurl, CURLOPT_RETURNTRANSFER, true);
 		$updateResponse = curl_exec($updateCurl);
 		$updateStatusCode = curl_getinfo($updateCurl, CURLINFO_HTTP_CODE);
-		curl_close($updateCurl);
-
+		if(PHP_VERSION_ID < 80000) {//PHP8.0未満の時は
+			curl_close($updateCurl);
+		}
 		if (!$updateResponse) {
-			error($en ? "Failed to update the file." : "ファイルの更新に失敗しました。");
+			error($en ? "Failed to update the file." : "ファイルの更新に失敗しました。" ,false);
 		}
 		// var_dump($updateResponse);
 
@@ -179,8 +183,9 @@ class connect_misskey_api{
 		curl_setopt($postCurl, CURLOPT_RETURNTRANSFER, true);
 		$postResponse = curl_exec($postCurl);
 		$postStatusCode = curl_getinfo($postCurl, CURLINFO_HTTP_CODE);
-		curl_close($postCurl);
-
+		if(PHP_VERSION_ID < 80000) {//PHP8.0未満の時は
+			curl_close($postCurl);
+		}
 		if ($postResponse) {
 			$postResult = json_decode($postResponse, true);
 			if (!empty($postResult['createdNote']["fileIds"])) {
@@ -201,10 +206,10 @@ class connect_misskey_api{
 
 		} 
 		else {
-			error($en ? "Failed to post the content." : "投稿に失敗しました。");
-			}
+			error($en ? "Failed to post the content." : "投稿に失敗しました。" ,false);
+		}
 	} else {
-		error($en ? "Failed to post the content." : "投稿に失敗しました。");
+		error($en ? "Failed to post the content." : "投稿に失敗しました。" ,false);
 	}
 			// var_dump($uploadResponse);
 					// unset($_SESSION['sns_api_val']);

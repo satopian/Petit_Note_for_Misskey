@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2025 MIT License
 //https://paintbbs.sakura.ne.jp/
 
-$functions_ver=20250619;
+$functions_ver=20250707;
 
 //編集モードログアウト
 function logout(): void {
@@ -802,7 +802,7 @@ function check_jpeg_exif($upfile): void {
 	}
 
 	//画像回転の検出
-	$exif = exif_read_data($upfile);
+	$exif = @exif_read_data($upfile);// サポートされていないタグの時に`E_NOTICE`が発生するので`@`をつける
 	$orientation = $exif["Orientation"] ?? 1;
 	//位置情報はあるか?
 	$gpsdata_exists =(isset($exif['GPSLatitude']) && isset($exif['GPSLongitude'])); 
@@ -853,8 +853,10 @@ function check_jpeg_exif($upfile): void {
 	// 画像を保存
 	imagejpeg($im_out, $upfile,98);
 	// 画像のメモリを解放
-	imagedestroy($im_in);
-	imagedestroy($im_out);
+	if(PHP_VERSION_ID < 80000) {//PHP8.0未満の時は
+    	imagedestroy($im_in);
+    	imagedestroy($im_out);
+	}
 }
 
 //サムネイル作成
@@ -1409,6 +1411,9 @@ function check_pch_ext ($filepath,$options = []): string {
 // 古いスレッドへの投稿を許可するかどうか
 function check_elapsed_days ($postedtime): bool {
 	global $elapsed_days;
+	if(!$postedtime || !is_numeric($postedtime)){
+		return true; // 投稿時間が不正な場合は許可
+	}
 	$postedtime=microtime2time($postedtime);//マイクロ秒を秒に戻す
 	return $elapsed_days //古いスレッドのフォームを閉じる日数が設定されていたら
 		? ((time() - (int)$postedtime) <= ((int)$elapsed_days * 86400)) // 指定日数以内なら許可
@@ -1417,7 +1422,7 @@ function check_elapsed_days ($postedtime): bool {
 // スレッドを閉じるまでの残り時間
 function time_left_to_close_the_thread ($postedtime): string {
 	global $elapsed_days;
-	if(!$elapsed_days){
+	if(!$elapsed_days || !$postedtime || !is_numeric($postedtime)){
 		return '';
 	}
 	$postedtime=microtime2time($postedtime);//マイクロ秒を秒に戻す
@@ -1630,23 +1635,25 @@ function post_share_server(): void {
 	setcookie("sns_server_radio_cookie",$sns_server_radio_for_cookie, time()+(86400*30),"","",false,true);
 	setcookie("sns_server_direct_input_cookie",$sns_server_direct_input, time()+(86400*30),"","",false,true);
 	$share_url='';
+
 	if($sns_server_radio){
-		$share_url=$sns_server_radio."/share?text=";
-	} elseif($sns_server_direct_input){//直接入力時
-		$share_url=$sns_server_direct_input."/share?text=";
+		if(in_array($sns_server_radio,["https://x.com","https://twitter.com"])){
+			$share_url="https://twitter.com/intent/tweet?text=";
+		} elseif($sns_server_radio === "https://bsky.app"){
+			$share_url="https://bsky.app/intent/compose?text=";
+		}	elseif($sns_server_radio === "https://www.threads.net"){
+			$share_url="https://www.threads.net/intent/post?text=";
+		} else {
+			$share_url=$sns_server_radio."/share?text=";
+		}
+	} elseif ($sns_server_direct_input){//直接入力時
 		if($sns_server_direct_input==="https://bsky.app"){
 			$share_url="https://bsky.app/intent/compose?text=";
 		} elseif($sns_server_direct_input==="https://www.threads.net"){
 			$share_url="https://www.threads.net/intent/post?text=";
+		} else {
+			$share_url=$sns_server_direct_input."/share?text=";
 		}
-	}
-	if(in_array($sns_server_radio,["https://x.com","https://twitter.com"])){
-		// $share_url="https://x.com/intent/post?text=";
-		$share_url="https://twitter.com/intent/tweet?text=";
-	} elseif($sns_server_radio === "https://bsky.app"){
-		$share_url="https://bsky.app/intent/compose?text=";
-	}	elseif($sns_server_radio === "https://www.threads.net"){
-		$share_url="https://www.threads.net/intent/post?text=";
 	}
 	$share_url.=$encoded_t.'%20'.$encoded_u;
 	$share_url = filter_var($share_url, FILTER_VALIDATE_URL) ? $share_url : ''; 
@@ -1660,11 +1667,11 @@ function file_lock($fp, int $lock, array $options=[]): void {
 	global $en;
 	$flock=flock($fp, $lock);
 	if (!$flock) {
-			if($lock !== LOCK_UN){
-				if(isset($options['paintcom'])){
-					location_paintcom();//未投稿画像の投稿フォームへ
-				}
-				error($en ? 'Failed to lock the file.' : 'ファイルのロックに失敗しました。');
+		if($lock !== LOCK_UN){//ロック解除以外の時
+			if(isset($options['paintcom'])){
+				location_paintcom();//未投稿画像の投稿フォームへ
+			}
+			error($en ? 'Failed to lock the file.' : 'ファイルのロックに失敗しました。');
 		}
 	}
 }
