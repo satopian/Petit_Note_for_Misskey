@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2025 MIT License
 //https://paintbbs.sakura.ne.jp/
 
-$functions_ver=20250707;
+$functions_ver=20250713;
 
 //編集モードログアウト
 function logout(): void {
@@ -96,7 +96,7 @@ function set_page_context_to_session(){
 		'imgsearch' => (bool)filter_input_data('GET', 'imgsearch', FILTER_VALIDATE_BOOLEAN),
 		'q' => (string)filter_input_data('GET', 'q'),
 	];
-	$_SESSION['current_id'] = null;
+	$_SESSION['current_resid'] = null;
 }
 // 年齢確認ボタン押下でCookieを発行
 function age_check(): void {
@@ -145,7 +145,7 @@ function admin_in(): void {
 	aikotoba_required_to_view();
 
 	//古いテンプレート用の使用しない変数
-	$page = $resno = $catalog = $res_catalog = $search= $radio= $imgsearch= $q ="";
+	$page = $resno = $catalog = $res_catalog = $search = $radio = $imgsearch = $q = $id ="";
 
 	session_sta();
 
@@ -156,8 +156,7 @@ function admin_in(): void {
 
 	$page= $_SESSION['current_page_context']["page"] ?? 0;
 	$resno= $_SESSION['current_page_context']["resno"] ?? 0;
-	$id = $_SESSION['current_id']	?? "";
-
+	$resid = $_SESSION['current_resid']	?? "";
 	//フォームの表示時刻をセット
 	set_form_display_time();
 
@@ -321,10 +320,10 @@ function branch_destination_of_location(): void {
 		if(!is_file(LOG_DIR.$resno.'.log')){
 			redirect('./');
 		}
-		$id = $_SESSION['current_id'] ?? "";//intの範囲外
-		$id = ctype_digit($id) ? $id : "";
+		$resid = $_SESSION['current_resid'] ?? "";//intの範囲外
+		$resid = ctype_digit($resid) ? $resid : "";
 		$res_param = $res_catalog ? '&res_catalog=on' : ($misskey_note ? '&misskey_note=on' : '');
-		$res_param .= $id ? "&resid={$id}#{$id}" : '';
+		$res_param .= $resid ? "&resid={$resid}" : '';
 		
 		redirect('./?resno='.h($resno).$res_param);
 	}
@@ -406,13 +405,14 @@ function is_paint_tool_name($tool): string {
 function create_res($line,$options=[]): array {
 	global $root_url,$boardname,$do_not_change_posts_time,$en,$mark_sensitive_image,$set_all_images_to_nsfw;
 	list($no,$sub,$name,$verified,$com,$url,$imgfile,$w,$h,$thumbnail,$paintsec,$log_hash_img,$abbr_toolname,$pchext,$time,$first_posted_time,$host,$userid,$hash,$oya)=$line;
-
 	$time = basename($time);
 
 	$isset_catalog = isset($options['catalog']);
 	$isset_search = isset($options['search']);
 	$is_badhost = $options['is_badhost'] ?? false;
 	
+	$is_oya = ($oya === "oya");
+
 	$res=[];
 
 	$continue = true;
@@ -474,17 +474,18 @@ function create_res($line,$options=[]): array {
 		'pchext' => $pchext,
 		'anime' => $anime,
 		'continue' => ($check_elapsed_days && !$is_badhost) ? $continue : (adminpost_valid() ? $continue : false),
+		'first_posted_time' => $first_posted_time,
 		'time' => $time,
 		'date' => $date,
 		'datetime' => $datetime,
 		'host' => admindel_valid() ? $host : '',
 		'userid' => $userid,
 		'check_elapsed_days' => $check_elapsed_days,
-		'encoded_boardname' => $isset_catalog ? urlencode($boardname) : '',
 		'encoded_name' => (!$isset_catalog || $isset_search) ? urlencode($name) : '',
-		'encoded_no' => !$isset_catalog ? urlencode('['.$no.']') : '',
-		'encoded_sub' => !$isset_catalog ? urlencode($sub) : '',
-		'encoded_u' => !$isset_catalog ? urlencode($root_url.'?resno='.$no) : '',//tweet
+		'encoded_no' => (!$isset_catalog && $is_oya) ? urlencode('['.$no.']') : '',
+		'encoded_sub' => (!$isset_catalog && $is_oya) ? urlencode($sub) : '',
+		'encoded_u' => (!$isset_catalog && $is_oya) ? urlencode($root_url.'?resno='.$no) : '',//tweet
+		'encoded_item_u' => !$isset_catalog ? urlencode($root_url.'?resno='.$no.'&resid='.$first_posted_time) : '',//tweet
 		'encoded_t' => !$isset_catalog ? urlencode('['.$no.']'.$sub.($name ? ' by '.$name : '').' - '.$boardname) : '',
 		'oya' => $oya,
 		'webpimg' => $webpimg ? 'webp/'.$time.'t.webp' :false,
@@ -854,8 +855,8 @@ function check_jpeg_exif($upfile): void {
 	imagejpeg($im_out, $upfile,98);
 	// 画像のメモリを解放
 	if(PHP_VERSION_ID < 80000) {//PHP8.0未満の時は
-    	imagedestroy($im_in);
-    	imagedestroy($im_out);
+		imagedestroy($im_in);
+		imagedestroy($im_out);
 	}
 }
 
