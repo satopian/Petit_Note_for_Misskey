@@ -886,10 +886,10 @@
   margin-left: 3px;
 }
 
-.chickenpaint-selection-panel label {
- margin: 8px 0;
+.chickenpaint-selection-panel .form-group label,
+.chickenpaint-pan-panel .form-group label {
+  margin: 0 0 8px;
 }
-
 .chickenpaint-gradient-panel {
   padding: 3px;
 }
