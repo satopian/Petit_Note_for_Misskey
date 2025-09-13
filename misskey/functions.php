@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2025 MIT License
 //https://paintbbs.sakura.ne.jp/
 
-$functions_ver=20250713;
+$functions_ver=20250912;
 
 //編集モードログアウト
 function logout(): void {
@@ -145,7 +145,7 @@ function admin_in(): void {
 	aikotoba_required_to_view();
 
 	//古いテンプレート用の使用しない変数
-	$page = $resno = $catalog = $res_catalog = $search = $radio = $imgsearch = $q = $id ="";
+	$page = $resno = $catalog = $res_catalog = $search = $radio = $imgsearch = $q = $id = "";
 
 	session_sta();
 
@@ -156,7 +156,7 @@ function admin_in(): void {
 
 	$page= $_SESSION['current_page_context']["page"] ?? 0;
 	$resno= $_SESSION['current_page_context']["resno"] ?? 0;
-	$resid = $_SESSION['current_resid']	?? "";
+	$resid = $_SESSION['current_resid'] ?? "";
 	//フォームの表示時刻をセット
 	set_form_display_time();
 
@@ -324,7 +324,7 @@ function branch_destination_of_location(): void {
 		$resid = ctype_digit($resid) ? $resid : "";
 		$res_param = $res_catalog ? '&res_catalog=on' : ($misskey_note ? '&misskey_note=on' : '');
 		$res_param .= $resid ? "&resid={$resid}" : '';
-		
+
 		redirect('./?resno='.h($resno).$res_param);
 	}
 	if($catalog){
@@ -403,14 +403,15 @@ function is_paint_tool_name($tool): string {
 
 //ログ出力の前処理 行から情報を取り出す
 function create_res($line,$options=[]): array {
-	global $root_url,$boardname,$do_not_change_posts_time,$en,$mark_sensitive_image,$set_all_images_to_nsfw;
+	global $root_url,$boardname,$do_not_change_posts_time,$en,$mark_sensitive_image,$set_all_images_to_nsfw,$all_hide_painttime ;
 	list($no,$sub,$name,$verified,$com,$url,$imgfile,$w,$h,$thumbnail,$paintsec,$log_hash_img,$abbr_toolname,$pchext,$time,$first_posted_time,$host,$userid,$hash,$oya)=$line;
+
 	$time = basename($time);
 
 	$isset_catalog = isset($options['catalog']);
 	$isset_search = isset($options['search']);
 	$is_badhost = $options['is_badhost'] ?? false;
-	
+
 	$is_oya = ($oya === "oya");
 
 	$res=[];
@@ -428,11 +429,14 @@ function create_res($line,$options=[]): array {
 	$hide_thumbnail = $mark_sensitive_image ? (strpos($thumbnail,'hide_')!==false) :'';
 	$hide_thumbnail = $set_all_images_to_nsfw ? $set_all_images_to_nsfw : $hide_thumbnail;
 
-	$_w=$w;
-	$_h=$h;
+	$_w=(string)$w;
+	$_h=(string)$h;
 	if($hide_thumbnail){
 		list($w,$h)=image_reduction_display($w,$h,300,300);
 	}
+	$w=(string)$w;
+	$h=(string)$h;
+
 	$thumbnail_webp = ((strpos($thumbnail,'thumbnail_webp')!==false)) ? $time.'s.webp' : false; 
 	$thumbnail_jpg = (!$thumbnail_webp && strpos($thumbnail,'thumbnail')!==false) ? $time.'s.jpg' : false; 
 
@@ -461,13 +465,13 @@ function create_res($line,$options=[]): array {
 		'url' => $url ? filter_var($url,FILTER_VALIDATE_URL) : '',
 		'img' => $imgfile,
 		'thumbnail' => $thumbnail_img,//webp or jpegのサムネイルのファイル名
-		'painttime' => $painttime ? $painttime['ja'] : '',
-		'painttime_en' => $painttime ? $painttime['en'] : '',
-		'paintsec' => $paintsec,
-		'w' => ($w && is_numeric($w)) ? $w :'',
-		'h' => ($h && is_numeric($h)) ? $h :'',
-		'_w' => ($_w && is_numeric($_w)) ? $_w :'',
-		'_h' => ($_h && is_numeric($_h)) ? $_h :'',
+		'painttime' => (!$all_hide_painttime && $painttime) ? $painttime['ja'] : '',
+		'painttime_en' => (!$all_hide_painttime && $painttime) ? $painttime['en'] : '',
+		'paintsec' => !$all_hide_painttime ? $paintsec : '',
+		'w' => ($w && ctype_digit($w)) ? $w :'',
+		'h' => ($h && ctype_digit($h)) ? $h :'',
+		'_w' => ($_w && ctype_digit($_w)) ? $_w :'',
+		'_h' => ($_h && ctype_digit($_h)) ? $_h :'',
 		'tool' => $tool,
 		'abbr_toolname' => $abbr_toolname,
 		'upload_image' => $upload_image,
@@ -481,12 +485,12 @@ function create_res($line,$options=[]): array {
 		'host' => admindel_valid() ? $host : '',
 		'userid' => $userid,
 		'check_elapsed_days' => $check_elapsed_days,
-		'encoded_name' => (!$isset_catalog || $isset_search) ? urlencode($name) : '',
-		'encoded_no' => (!$isset_catalog && $is_oya) ? urlencode('['.$no.']') : '',
-		'encoded_sub' => (!$isset_catalog && $is_oya) ? urlencode($sub) : '',
-		'encoded_u' => (!$isset_catalog && $is_oya) ? urlencode($root_url.'?resno='.$no) : '',//tweet
-		'encoded_item_u' => !$isset_catalog ? urlencode($root_url.'?resno='.$no.'&resid='.$first_posted_time) : '',//tweet
-		'encoded_t' => !$isset_catalog ? urlencode('['.$no.']'.$sub.($name ? ' by '.$name : '').' - '.$boardname) : '',
+		'encoded_name' => (!$isset_catalog || $isset_search) ? rawurlencode($name) : '',
+		'encoded_no' => (!$isset_catalog && $is_oya) ? rawurlencode('['.$no.']') : '',
+		'encoded_sub' => (!$isset_catalog && $is_oya) ? rawurlencode($sub) : '',
+		'encoded_u' => (!$isset_catalog && $is_oya) ? rawurlencode($root_url.'?resno='.$no) : '',//tweet
+		'encoded_item_u' => !$isset_catalog ? rawurlencode($root_url.'?resno='.$no.'&resid='.$first_posted_time) : '',//tweet
+		'encoded_t' => !$isset_catalog ? rawurlencode('['.$no.']'.$sub.($name ? ' by '.$name : '').' - '.$boardname) : '',
 		'oya' => $oya,
 		'webpimg' => $webpimg ? 'webp/'.$time.'t.webp' :false,
 		'hide_thumbnail' => $hide_thumbnail, //サムネイルにぼかしをかける時
@@ -806,7 +810,7 @@ function check_jpeg_exif($upfile): void {
 	$exif = @exif_read_data($upfile);// サポートされていないタグの時に`E_NOTICE`が発生するので`@`をつける
 	$orientation = $exif["Orientation"] ?? 1;
 	//位置情報はあるか?
-	$gpsdata_exists =(isset($exif['GPSLatitude']) && isset($exif['GPSLongitude'])); 
+	$gpsdata_exists =(isset($exif['GPSLatitude']) || isset($exif['GPSLongitude'])); 
 
 	if ($orientation === 1 && !$gpsdata_exists) {
 		//画像が回転していない、位置情報も存在しない
@@ -1037,7 +1041,7 @@ function check_submission_interval(): void {
 	global $en;
 
 	// 1.2秒の間隔を設ける
-	$min_interval = 1.2;//1.2秒待機
+	$min_interval = 0.8;//0.8秒待機
 
 	session_sta();
 	if (!isset($_SESSION['form_display_time'])) {
@@ -1309,7 +1313,7 @@ function closeFile ($fp): void {
 
 //縮小表示
 function image_reduction_display($w,$h,$max_w,$max_h): array {
-	if(!is_numeric($w)||!is_numeric($h)){
+	if(!ctype_digit((string)$w)||!ctype_digit((string)$h)){
 		return ['',''];
 	}
 
@@ -1317,7 +1321,7 @@ function image_reduction_display($w,$h,$max_w,$max_h): array {
 		$w_ratio = $max_w / $w;
 		$h_ratio = $max_h / $h;
 		$ratio = min($w_ratio, $h_ratio);
-		$w = ceil($w * $ratio);
+		$w = ceil($w * $ratio);//端数の切り上げ
 		$h = ceil($h * $ratio);
 	}
 	$reduced_size = [$w,$h];
@@ -1330,7 +1334,7 @@ function image_reduction_display($w,$h,$max_w,$max_h): array {
  */
 function calcPtime ($psec): ?array {
 
-	if(!is_numeric($psec)){
+	if(!ctype_digit((string)$psec)){
 		return null;
 	}
 
@@ -1621,48 +1625,7 @@ function getTranslatedLayerName(): string {
 
 	return "Layer";
 }
-//SNSへ共有リンクを送信
-function post_share_server(): void {
-	global $en;
 
-	$sns_server_radio=(string)filter_input_data('POST',"sns_server_radio",FILTER_VALIDATE_URL);
-	$sns_server_radio_for_cookie=(string)filter_input_data('POST',"sns_server_radio");//directを判定するためurlでバリデーションしていない
-	$sns_server_radio_for_cookie=($sns_server_radio_for_cookie === 'direct') ? 'direct' : $sns_server_radio;
-	$sns_server_direct_input=(string)filter_input_data('POST',"sns_server_direct_input",FILTER_VALIDATE_URL);
-	$encoded_t=(string)filter_input_data('POST',"encoded_t");
-	$encoded_t=urlencode($encoded_t);
-	$encoded_u=(string)filter_input_data('POST',"encoded_u");
-	$encoded_u=urlencode($encoded_u);
-	setcookie("sns_server_radio_cookie",$sns_server_radio_for_cookie, time()+(86400*30),"","",false,true);
-	setcookie("sns_server_direct_input_cookie",$sns_server_direct_input, time()+(86400*30),"","",false,true);
-	$share_url='';
-
-	if($sns_server_radio){
-		if(in_array($sns_server_radio,["https://x.com","https://twitter.com"])){
-			$share_url="https://twitter.com/intent/tweet?text=";
-		} elseif($sns_server_radio === "https://bsky.app"){
-			$share_url="https://bsky.app/intent/compose?text=";
-		}	elseif($sns_server_radio === "https://www.threads.net"){
-			$share_url="https://www.threads.net/intent/post?text=";
-		} else {
-			$share_url=$sns_server_radio."/share?text=";
-		}
-	} elseif ($sns_server_direct_input){//直接入力時
-		if($sns_server_direct_input==="https://bsky.app"){
-			$share_url="https://bsky.app/intent/compose?text=";
-		} elseif($sns_server_direct_input==="https://www.threads.net"){
-			$share_url="https://www.threads.net/intent/post?text=";
-		} else {
-			$share_url=$sns_server_direct_input."/share?text=";
-		}
-	}
-	$share_url.=$encoded_t.'%20'.$encoded_u;
-	$share_url = filter_var($share_url, FILTER_VALIDATE_URL) ? $share_url : ''; 
-	if(!$share_url){
-		error($en ? "Please select an SNS sharing destination.":"SNSの共有先を選択してください。");
-	}
-	redirect($share_url);
-}
 //flockのラッパー関数
 function file_lock($fp, int $lock, array $options=[]): void {
 	global $en;
