@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2025 MIT License
 //https://paintbbs.sakura.ne.jp/
 
-$functions_ver=20250912;
+$functions_ver=20250918;
 
 //編集モードログアウト
 function logout(): void {
@@ -403,7 +403,7 @@ function is_paint_tool_name($tool): string {
 
 //ログ出力の前処理 行から情報を取り出す
 function create_res($line,$options=[]): array {
-	global $root_url,$boardname,$do_not_change_posts_time,$en,$mark_sensitive_image,$set_all_images_to_nsfw,$all_hide_painttime ;
+	global $root_url,$boardname,$do_not_change_posts_time,$en,$mark_sensitive_image,$set_all_images_to_nsfw,$all_hide_painttime,$hide_userid;
 	list($no,$sub,$name,$verified,$com,$url,$imgfile,$w,$h,$thumbnail,$paintsec,$log_hash_img,$abbr_toolname,$pchext,$time,$first_posted_time,$host,$userid,$hash,$oya)=$line;
 
 	$time = basename($time);
@@ -454,7 +454,9 @@ function create_res($line,$options=[]): array {
 	$webpimg = $imgfile ? is_file('webp/'.$time.'t.webp') : false;
 	$com = (!$isset_catalog || $isset_search) ? $com : '';
 	$com = $com ? (!$isset_search ? str_replace('"\n"',"\n",$com) : str_replace('"\n"'," ",$com)) : '';
-
+	$adminpost_valid = adminpost_valid();
+	$admindel_valid = admindel_valid();
+	$is_admin = $admindel_valid || $adminpost_valid;
 	$res=[
 		'no' => $no,
 		'sub' => $sub,
@@ -465,7 +467,7 @@ function create_res($line,$options=[]): array {
 		'url' => $url ? filter_var($url,FILTER_VALIDATE_URL) : '',
 		'img' => $imgfile,
 		'thumbnail' => $thumbnail_img,//webp or jpegのサムネイルのファイル名
-		'painttime' => (!$all_hide_painttime && $painttime) ? $painttime['ja'] : '',
+		'painttime' => ((!$all_hide_painttime || $is_admin) && $painttime) ? $painttime['ja'] : '',
 		'painttime_en' => (!$all_hide_painttime && $painttime) ? $painttime['en'] : '',
 		'paintsec' => !$all_hide_painttime ? $paintsec : '',
 		'w' => ($w && ctype_digit($w)) ? $w :'',
@@ -477,13 +479,13 @@ function create_res($line,$options=[]): array {
 		'upload_image' => $upload_image,
 		'pchext' => $pchext,
 		'anime' => $anime,
-		'continue' => ($check_elapsed_days && !$is_badhost) ? $continue : (adminpost_valid() ? $continue : false),
+		'continue' => ($check_elapsed_days && !$is_badhost) ? $continue : ($adminpost_valid ? $continue : false),
 		'first_posted_time' => $first_posted_time,
 		'time' => $time,
 		'date' => $date,
 		'datetime' => $datetime,
-		'host' => admindel_valid() ? $host : '',
-		'userid' => $userid,
+		'host' => $admindel_valid ? $host : '',
+		'userid' => (!$hide_userid || $is_admin) ? $userid : '',
 		'check_elapsed_days' => $check_elapsed_days,
 		'encoded_name' => (!$isset_catalog || $isset_search) ? rawurlencode($name) : '',
 		'encoded_no' => (!$isset_catalog && $is_oya) ? rawurlencode('['.$no.']') : '',
@@ -969,10 +971,14 @@ function check_same_origin(): void {
 	if(!$usercode || ($usercode!==$c_usercode)&&($usercode!==$session_usercode)){
 		error($en?"User code mismatch.":"ユーザーコードが一致しません。");
 	}
+
+	$sec_fetch_site = $_SERVER['HTTP_SEC_FETCH_SITE'] ?? '';
+	$same_origin = ($sec_fetch_site === 'same-origin');
+	
 	if(!isset($_SERVER['HTTP_ORIGIN']) || !isset($_SERVER['HTTP_HOST'])){
 		error($en?'Your browser is not supported. ':'お使いのブラウザはサポートされていません。');
 	}
-	if(parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST) !== $_SERVER['HTTP_HOST']){
+	if(!$same_origin && (parse_url($_SERVER['HTTP_ORIGIN'], PHP_URL_HOST) !== $_SERVER['HTTP_HOST'])){
 		error($en?"The post has been rejected.":'拒絶されました。');
 	}
 }
