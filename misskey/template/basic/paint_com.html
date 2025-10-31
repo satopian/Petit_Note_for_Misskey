@@ -1,129 +1,212 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<link rel="stylesheet" href="<?=h($skindir)?>index.css?<?=h($petit_lot)?>">
-	<link rel="preload" as="style" href="<?=h($skindir)?>icomoon/style.css?<?=h($petit_lot)?>" onload="this.rel='stylesheet'">
-	<link rel="preload" as="script" href="lib/<?=h(JQUERY)?>">
-	<link rel="preload" as="script" href="<?=h($skindir)?>js/common.js?<?=h($petit_lot)?>">
-	<title><?=h($boardname)?></title> 
-	<style>form#res_form >div {
-    margin: 0 0 12px;
-	}
+	<link rel="stylesheet" href="<?= h($skindir) ?>index.css?<?= h($petit_lot) ?>">
+	<link rel="preload" as="style" href="<?= h($skindir) ?>icomoon/style.css?<?= h($petit_lot) ?>" onload="this.rel='stylesheet'">
+	<link rel="preload" as="script" href="lib/<?= h(JQUERY) ?>">
+	<link rel="preload" as="script" href="<?= h($skindir) ?>js/common.js?<?= h($petit_lot) ?>">
+	<title><?= h($boardname) ?></title>
+	<style>
+		form#res_form>div {
+			margin: 0 0 12px;
+		}
 	</style>
+	<script>
+		const setAllNsfw = <?= h(isset($set_all_images_to_nsfw) ? ($set_all_images_to_nsfw ? "true" : "false") : "false") ?>;
+		const updateCwWidth = () => {
+			const attach_preview_wrap = document.getElementById("attach_preview_wrap");
+			const cw = document.getElementById("cw");
+			if (cw) {
+				//padding 2+2
+				//border 1+1
+				//合計6px
+				cw.style.width = attach_preview_wrap?.offsetWidth - 6 + "px";
+			}
+		}
+		const select_pic = () => {
+			const paintComPreview = document.getElementById("paintcom_attach_preview");
+			const paintcomPostCom = document.getElementById("post_com");
+			const select_picfile = document.getElementById('select_picfile');
+			const paintcom_title = document.getElementById('paintcom_title');
+			const paintcom_sage = document.getElementById('paintcom_sage');
+			const paintcom_hide_animation = document.getElementById('paintcom_hide_animation');
+			const elem_error_message =
+				document.getElementById("error_message");
 
+			const error = () => {
+				if (elem_error_message) {
+					elem_error_message.innerText = en ?
+						"This file is an unsupported format." :
+						"対応していないファイル形式です。";
+				}
+				paintComPreview.style.display = "none";
+				return;
+			}
 
+			if (select_picfile) {
+				const csvString = select_picfile.value;
+				const csvArray = csvString.split(',');
+				const paintComSerectedImg = csvArray[0];
+				paintComPreview.style.margin = "5px";
+				paintComPreview.style.backgroundColor = "white";
+				paintComPreview.style.maxWidth = "180px";
+				paintComPreview.style.maxHeight = "200px";
+				paintComPreview.style.borderRadius = "3px";
+				paintComPreview.style.height = "fit-content";
+				paintComPreview.style.display = "block";
+				// 読み込み完了後に高さを取得
+				paintComPreview.onload = () => {
+					if (paintComPreview.naturalWidth <= 0) {
+						error();
+					}
+					previewoffsetHeight = paintComPreview.offsetHeight;
+
+					paintcomPostCom.style.minHeight =
+						previewoffsetHeight > 75 ?
+						previewoffsetHeight + 5 + "px" :
+						80 + "px";
+
+					paintcomPostCom.style.minHeight = paintComPreview.height + 10 + "px";
+				};
+				paintComPreview.onerror = () => {
+					error();
+				};
+				paintComPreview.src = `temp/${paintComSerectedImg}`;
+				updateCwWidth();
+			}
+		}
+
+		document.addEventListener('DOMContentLoaded', () => {
+			const select_picfile = document.getElementById('select_picfile');
+			if (select_picfile) {
+				select_pic();
+				select_picfile.addEventListener('change', select_pic);
+			}
+			document.getElementById("hide_content").addEventListener('change', () => {});
+		});
+	</script>
 </head>
+
 <body>
 	<div class="container">
-		<h1 class="title"><a href="./"><?=h($boardname)?></a></h1>
-		<nav class="menu_wrap" >
-			<span>[<a href="./"><?php if($en):?>Return<?php else:?>掲示板にもどる<?php endif;?></a>]</span>
+		<h1 class="title"><a href="./"><?= h($boardname) ?></a></h1>
+		<nav class="menu_wrap">
+			<span>[<a href="./"><?php if ($en): ?>Return<?php else: ?>掲示板にもどる<?php endif; ?></a>]</span>
 			<a href="#bottom">▽</a>
-			</nav>
-							   <hr>
-			
+		</nav>
+		<hr>
+
 		<div>
 			<div class="error">
-				<?php if(!$tmps):?>
-				<?php if($en):?>The images was not found.<?php else:?>画像が見当たりません。<?php endif;?><br>
-				<a href="#" onClick="javascript:window.history.back(-1);return false;"><?php if($en):?>Back<?php else:?>もどる<?php endif;?></a>
+				<?php if (!$tmps): ?>
+					<?php if ($en): ?>The images was not found.<?php else: ?>画像が見当たりません。<?php endif; ?><br>
+					<a href="#" onClick="javascript:window.history.back(-1);return false;"><?php if ($en): ?>Back<?php else: ?>もどる<?php endif; ?></a>
 			</div>
-			<?php endif;?>
-<?php if($tmps):?>
-			<?php foreach($out as $i=>$val):?>
-			<?php foreach($val as $tempimg):?>
-<div class="posted_img_form">
-	<img src="<?=h($tempimg['src'])?>"
-	alt="<?=h($tempimg['srcname'])?>" width="<?=h($tempimg['w'])?>" height="<?=h($tempimg['h'])?>"></div>
-<?=h($tempimg['srcname'])?><br>
-<?=h($tempimg['date'])?>
+		<?php endif; ?>
+		<?php if ($tmps): ?>
+			<?php foreach ($out as $i => $val): ?>
+				<?php foreach ($val as $tempimg): ?>
+					<div class="posted_img_form">
+						<img src="<?= h($tempimg['src']) ?>"
+							alt="<?= h($tempimg['srcname']) ?>" width="<?= h($tempimg['w']) ?>" height="<?= h($tempimg['h']) ?>">
+					</div>
+					<?= h($tempimg['srcname']) ?><br>
+					<?= h($tempimg['date']) ?>
 
-				<?php endforeach;?>
-				<?php endforeach;?>
-	</div>
-<?php if($aikotoba):?>
-<form action="./" method="POST" enctype="multipart/form-data" class="postform" id="image_rep" onsubmit="return res_form_submit(event,'image_rep')">
-	<div id="error_message_imgrep"></div>
-<textarea name="cw" class="post_cw" id="cw" placeholder="<?php if($en):?>CW<?php else:?>CW 注釈<?php endif;?>"></textarea>
-<textarea name="com" class="post_com" placeholder="<?php if($en):?>Comment<?php else:?>コメント<?php endif;?>"></textarea>
-<!-- <input type="hidden" name="mode" value="resist"> -->
-<input type="hidden" name="mode" value="create_misskey_note_sessiondata">
-<input type="hidden" name="token" value="<?=h($token)?>">
-<input type="hidden" name="pictmp" value="<?=h($pictmp)?>">
-<div class="post_table_title"><?php if($en):?>Images<?php else:?>画像<?php endif;?>
-	<select name="picfile" class="post_select_image" onchange="select_pic();" id="select_picfile">
-	<?php foreach($out as $i=>$val):?>
-	<?php krsort($val);?>
-
-			<?php foreach($val as $tempimg):?>
-				<option value="<?=h($tempimg['slect_src_val'])?>"><?=h($tempimg['srcname'])?></option>
-				<?php endforeach;?>
-	
-				<?php endforeach;?>
-			</select>
-	<span id="paintcom_hide_animation">
-	</span>
-	<br>
+				<?php endforeach; ?>
+			<?php endforeach; ?>
 		</div>
-<div>
-	<span>
-	<input type="checkbox" name="hide_thumbnail" id="hide_thumbnail" value="on" checked="checked"><label for="hide_thumbnail"><?php if($en):?>Sensitive content<?php else:?>閲覧注意にする<?php endif;?></label>
-	</span>
-	<span>
-	<input type="checkbox" name="show_painttime" id="show_painttime" value="on" checked="checked"><label for="show_painttime"><?php if($en):?>Show Paint time<?php else:?>描画時間を表示<?php endif;?></label>
-	</span>
-	<span>
-	<input type="checkbox" name="show_tag" id="show_tag" value="on" checked="checked"><label for="show_tag"><?php if($en):?>Add tag "#Misskey専用お絵かき掲示板"<?php else:?>｢#Misskey専用お絵かき掲示板｣を含める<?php endif;?></label>
-	</span>
-	
-		<span>
-	<input type="checkbox" name="hide_content" id="hide_content" value="on" ><label for="hide_content"><?php if($en):?>Hide content<?php else:?>内容を隠す<?php endif;?></label>
-		</span>
-	<input type="hidden" name="to_misskey" id="to_misskey" value="on">	
-</div>
-<span class="icon-Simpleicons-Team-Simple-Misskey misskey_form_misskey_icon"></span> <input type="submit" value="<?php if($en):?>Post<?php else:?>投稿する<?php endif;?>" id="form_submit">
-</form>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
+		<?php if ($aikotoba): ?>
+			<form action="./" method="POST" enctype="multipart/form-data" class="postform" id="image_rep" onsubmit="return res_form_submit(event,'image_rep')">
+				<div id="error_message_imgrep"></div>
+				<textarea name="cw" class="post_cw" id="cw" placeholder="<?php if ($en): ?>CW<?php else: ?>CW 注釈<?php endif; ?>"></textarea>
+				<div style="display:flex;" class="attach_preview_wrap" id="attach_preview_wrap">
+					<img id="paintcom_attach_preview" style="max-width:200px;max-height:125px;height:fit-content;display:none" alt="preview" src="">
+					<textarea name="com" class="post_com" id="post_com" placeholder="<?php if ($en): ?>Comment<?php else: ?>コメント<?php endif; ?>"></textarea>
+				</div>
+				<!-- <input type="hidden" name="mode" value="resist"> -->
+				<input type="hidden" name="mode" value="create_misskey_note_sessiondata">
+				<input type="hidden" name="token" value="<?= h($token) ?>">
+				<input type="hidden" name="pictmp" value="<?= h($pictmp) ?>">
+				<div class="post_table_title"><?php if ($en): ?>Images<?php else: ?>画像<?php endif; ?>
+					<select name="picfile" class="post_select_image" id="select_picfile">
+						<?php foreach ($out as $i => $val): ?>
+							<?php krsort($val); ?>
 
-document.getElementById('cw').style.display = "none";
-document.getElementById('hide_content').addEventListener('change', function() {
-	
-	if(document.getElementById('hide_content').checked){
-		document.getElementById('cw').style.display = "block";
-	}else{
-		document.getElementById('cw').style.display = "none";
+							<?php foreach ($val as $tempimg): ?>
+								<option value="<?= h($tempimg['slect_src_val']) ?>"><?= h($tempimg['srcname']) ?></option>
+							<?php endforeach; ?>
 
-	}
-});
-});
-</script>
-<?php else:?>
-<?php if($en):?>What's the secret word?:<?php else:?>この掲示板の合言葉はなんですか?:<?php endif;?> 
-<form action="./" method="post" class="aikotoba">
-	<input type="text" name="aikotoba" class="input_txt">
-	<input type="hidden" name="mode" value="aikotoba">
-	<input type="hidden" name="paintcom" value="true">
-	<input type="submit" value="<?php if($en):?>Answer<?php else:?>秘密の答え<?php endif;?>">
-	</form>
-<?php endif;?>
+						<?php endforeach; ?>
+					</select>
+					<span id="paintcom_hide_animation">
+					</span>
+					<br>
+				</div>
+				<div>
+					<span>
+						<input type="checkbox" name="hide_thumbnail" id="hide_thumbnail" value="on" checked="checked"><label for="hide_thumbnail"><?php if ($en): ?>Sensitive content<?php else: ?>閲覧注意にする<?php endif; ?></label>
+					</span>
+					<span>
+						<input type="checkbox" name="show_painttime" id="show_painttime" value="on" checked="checked"><label for="show_painttime"><?php if ($en): ?>Show Paint time<?php else: ?>描画時間を表示<?php endif; ?></label>
+					</span>
+					<span>
+						<input type="checkbox" name="show_tag" id="show_tag" value="on" checked="checked"><label for="show_tag"><?php if ($en): ?>Add tag "#Misskey専用お絵かき掲示板"<?php else: ?>｢#Misskey専用お絵かき掲示板｣を含める<?php endif; ?></label>
+					</span>
 
-			<?php endif; ?>
+					<span>
+						<input type="checkbox" name="hide_content" id="hide_content" value="on"><label for="hide_content"><?php if ($en): ?>Hide content<?php else: ?>内容を隠す<?php endif; ?></label>
+					</span>
+					<input type="hidden" name="to_misskey" id="to_misskey" value="on">
+				</div>
+				<span class="icon-Simpleicons-Team-Simple-Misskey misskey_form_misskey_icon"></span> <input type="submit" value="<?php if ($en): ?>Post<?php else: ?>投稿する<?php endif; ?>" id="form_submit">
+			</form>
+			<script>
+				document.addEventListener("DOMContentLoaded", function() {
 
-<br>
-<?php if($tmps):?>
-[<a href="./"><?php if($en):?>Return<?php else:?>掲示板にもどる<?php endif;?></a>]
-<br>
-<?php endif;?>
-</div>
-</div>
-<div id="bottom"></div>
-<div id="page_top"><a class="icon-angles-up-solid"></a></div>
-<script>const paintcom = true;</script> 
-<script src="lib/<?=h(JQUERY)?>"></script>
-<script src="<?=h($skindir)?>js/common.js?<?=h($petit_lot)?>"></script>
+					document.getElementById('cw').style.display = "none";
+					document.getElementById('hide_content').addEventListener('change', function() {
+
+						if (document.getElementById('hide_content').checked) {
+							cw.style.display = "block";
+							updateCwWidth();
+						} else {
+							document.getElementById('cw').style.display = "none";
+
+						}
+					});
+				});
+			</script>
+		<?php else: ?>
+			<?php if ($en): ?>What's the secret word?:<?php else: ?>この掲示板の合言葉はなんですか?:<?php endif; ?>
+			<form action="./" method="post" class="aikotoba">
+				<input type="text" name="aikotoba" class="input_txt">
+				<input type="hidden" name="mode" value="aikotoba">
+				<input type="hidden" name="paintcom" value="true">
+				<input type="submit" value="<?php if ($en): ?>Answer<?php else: ?>秘密の答え<?php endif; ?>">
+			</form>
+		<?php endif; ?>
+
+	<?php endif; ?>
+
+	<br>
+	<?php if ($tmps): ?>
+		[<a href="./"><?php if ($en): ?>Return<?php else: ?>掲示板にもどる<?php endif; ?></a>]
+		<br>
+	<?php endif; ?>
+	</div>
+	</div>
+	<div id="bottom"></div>
+	<div id="page_top"><a class="icon-angles-up-solid"></a></div>
+	<script>
+		const paintcom = true;
+	</script>
+	<script src="lib/<?= h(JQUERY) ?>"></script>
+	<script src="<?= h($skindir) ?>js/common.js?<?= h($petit_lot) ?>"></script>
 </body>
+
 </html>
