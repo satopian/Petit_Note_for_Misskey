@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2025 MIT License
 //https://paintbbs.sakura.ne.jp/
 
-$functions_ver=20250929;
+$functions_ver=20251120;
 
 //編集モードログアウト
 function logout(): void {
@@ -520,7 +520,7 @@ function switch_tool($tool): string {
 			$tool='Shi-Painter';
 			break;
 		case 'chi':
-			$tool='litaChit';
+			$tool='litaChix';
 			break;
 		case 'klecks':
 			$tool='Klecks';

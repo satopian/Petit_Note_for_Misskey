@@ -58,7 +58,7 @@ $use_paintbbs_neo= true;
 $use_tegaki= true;
 // $use_tegaki= false;
 
-// litaChitを使う
+// litaChixを使う
 // 使う:true 使わない:false
 
 $use_chickenpaint= true;

@@ -275,7 +275,7 @@ function paint(): void {
 	} 
 
 	switch($app){
-		case 'chi'://litaChit
+		case 'chi'://litaChix
 		
 			$tool='chi';
 			// HTML出力
