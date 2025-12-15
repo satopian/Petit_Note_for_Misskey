@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2025
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20251118';
+$petit_lot='lot.20251215';
 $lang = ($http_langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
@@ -264,6 +264,16 @@ function paint(): void {
 	}
 
 	check_AsyncRequest();//Asyncリクエストの時は処理を中断
+
+	//AXNOS Paint用
+	//画像の幅と高さが最大値を超えている時は、画像の幅と高さを優先する
+	$pmax_w = max($picw, $pmax_w); // 最大幅を元画像にあわせる
+	$pmax_h = max($pich, $pmax_h); // 最大高を元画像にあわせる
+	$pmax_w = min($pmax_w,2000); // 2000px以上にはならない
+	$pmax_h = min($pmax_h,2000); // 2000px以上にはならない
+
+	$pmin_w = max($pmin_w, 8); // 8px以下にはならない
+	$pmin_h = max($pmin_h, 8); // 8px以下にはならない
 
 	$parameter_day = date("Ymd");//JavaScriptのキャッシュ制御
 
