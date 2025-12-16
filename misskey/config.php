@@ -35,7 +35,7 @@ $skindir="basic/";
 // 説明文が不要なら []で。
 
 // $descriptions = ["iPadやスマートフォンでも描けるお絵かき掲示板です。"];	
-$descriptions = ["｢PaintBBS NEO｣｢Tegaki｣｢ChickenPaint｣｢Klecks｣で絵を描いてMisskeyに投稿できます。","楽しくお絵かき。"];	
+$descriptions = ["｢PaintBBS NEO｣｢Tegaki｣｢litaChix｣｢Klecks｣で絵を描いてMisskeyに投稿できます。","楽しくお絵かき。"];	
 
 /*使用目的別設定*/
 
