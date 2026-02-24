@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2026 MIT License
 //https://paintbbs.sakura.ne.jp/
 
-$functions_ver=20260113;
+$functions_ver=20260224;
 
 //編集モードログアウト
 function logout(): void {
@@ -741,6 +741,7 @@ function get_image_type ($img_file): string {
 }
 //ファイルがあれば削除
 function safe_unlink ($path): void {
+	clearstatcache();
 	if ($path && is_file($path)) {
 		unlink($path);
 	}
@@ -783,6 +784,7 @@ function convert2($is_upload_img,$upload_img_mime_type,$fname,$time): void {
 
 	clearstatcache();
 	$filesize=filesize($upfile);
+
 	//GDのPNGのサイズは少し大きくなるので制限値を1.5で割る
 	$max_kb_size_over = ($filesize > ($max_kb * 1024 / 1.5));
 
@@ -1172,7 +1174,6 @@ function Reject_if_NGword_exists_in_the_post(): void {
 	if (is_ngword($badstring, [$chk_name,$chk_sub,$chk_url,$chk_com])) {
 		error($en?'There is an inappropriate string.':'不適切な表現があります。');
 	}
-
 	// 使えない名前チェック
 	if (is_ngword($badname, $chk_name)) {
 		error($en?'This name cannot be used.':'この名前は使えません。');
@@ -1202,13 +1203,17 @@ function is_ngword ($ngwords, $strs): bool {
 	$strs = (array)$strs;//配列に変換
 	foreach($ngwords as $i => $ngword){//拒絶する文字列
 		$ngwords[$i]  = str_replace([" ", "　"], "", $ngword);
-		$ngwords[$i]  = str_replace("/", "\/", $ngwords[$i]);
+		$ngwords[$i]  = str_replace("/", "&#47;", $ngwords[$i]);
 	}
 	foreach ($strs as $str) {
+		$str =str_replace("/", "&#47;", $str);
 		foreach($ngwords as $ngword){//拒絶する文字列
 			if ($ngword && preg_match("/{$ngword}/ui", $str)){
 				return true;
 			}
+		}
+		if (preg_match('/\p{M}{3,}/u', $str)) {
+			return true;
 		}
 	}
 	return false;
@@ -1552,7 +1557,7 @@ function ini_get_size_mb(string $key): float {
 
 	$val = ini_get($key);
 	$unit = strtoupper(substr($val, -1));
-	$num = (float)$val;
+	$num = (float)substr($val, 0, -1);
 
 	switch ($unit) {//単位の変換
 			case 'G':
@@ -1666,31 +1671,15 @@ function file_lock($fp, int $lock, array $options=[]): void {
 	}
 }
 //filter_input のラッパー関数
-function filter_input_data(string $input, string $key, int $filter=0) {
+function filter_input_data(string $input, string $key, int $filter=FILTER_UNSAFE_RAW) {
 	// $_GETまたは$_POSTからデータを取得
 	$value = null;
 	if ($input === 'GET') {
-			$value = $_GET[$key] ?? null;
+			$value = filter_input(INPUT_GET, $key, $filter);
 	} elseif ($input === 'POST') {
-			$value = $_POST[$key] ?? null;
+			$value = filter_input(INPUT_POST, $key, $filter);
 	} elseif ($input === 'COOKIE') {
-			$value = $_COOKIE[$key] ?? null;
+			$value = filter_input(INPUT_COOKIE, $key, $filter);
 	}
-
-	// データが存在しない場合はnullを返す
-	if ($value === null) {
-			return null;
-	}
-
-	// フィルタリング処理
-	switch ($filter) {
-		case FILTER_VALIDATE_BOOLEAN:
-			return  filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-		case FILTER_VALIDATE_INT:
-			return filter_var($value, FILTER_VALIDATE_INT);
-		case FILTER_VALIDATE_URL:
-			return filter_var($value, FILTER_VALIDATE_URL);
-		default:
-			return $value;  // 他のフィルタはそのまま返す
-	}
+		return $value;
 }
