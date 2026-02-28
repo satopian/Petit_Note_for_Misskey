@@ -30,7 +30,7 @@ if(!isset($save_inc_ver)||$save_inc_ver<20250318){
 	die($en?'Please update save.inc.php to the latest version.':'save.inc.phpを最新版に更新してください。');
 }
 // jQueryバージョン
-const JQUERY='jquery-3.7.0.min.js';
+const JQUERY='jquery-4.0.0.min.js';
 check_file(__DIR__.'/lib/'.JQUERY);
 
 check_file(__DIR__.'/config.php');
