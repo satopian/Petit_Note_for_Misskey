@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2025
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20251215';
+$petit_lot='lot.20260228';
 $lang = ($http_langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
@@ -59,13 +59,13 @@ $pdef_w = $pdef_w ?? 300;//幅
 $pdef_h = $pdef_h ?? 300;//高さ
 $step_of_canvas_size = $step_of_canvas_size ?? 50;
 $mode = (string)filter_input_data('POST','mode');
-$mode = $mode ? $mode :(string)filter_input_data('GET','mode');
+$mode = $mode ?:(string)filter_input_data('GET','mode');
 $userip = get_uip();
 //user-codeの発行
 $usercode = t((string)filter_input_data('COOKIE', 'usercode'));//user-codeを取得
 session_sta();
 $session_usercode = isset($_SESSION['usercode']) ? t((string)$_SESSION['usercode']) : "";
-$usercode = $usercode ? $usercode : $session_usercode;
+$usercode = $usercode ?: $session_usercode;
 if(!$usercode){//user-codeがなければ発行
 	$usercode = hash('sha256', $userip.random_bytes(16));
 }
@@ -249,7 +249,7 @@ function paint(): void {
 		if($type==='rep'){//画像差し換え
 			$rep=true;
 			$pwd = t((string)filter_input_data('POST', 'pwd'));
-			$pwd=$pwd ? $pwd : t((string)filter_input_data('COOKIE','pwdc'));//未入力ならCookieのパスワード
+			$pwd=$pwd ?: t((string)filter_input_data('COOKIE','pwdc'));//未入力ならCookieのパスワード
 			if(strlen($pwd) > 100) error($en? 'Password is too long.':'パスワードが長すぎます。');
 			if($pwd){
 				$pwd=basename($pwd);
