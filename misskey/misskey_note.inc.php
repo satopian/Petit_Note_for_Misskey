@@ -29,6 +29,9 @@ class misskey_note{
 		$cw = $hide_content ? $cw : null;
 
 		$pictmp2=false;
+		$tool='';
+		$painttime='';
+		$picfile_name='';
 		if($pictmp===2){//ユーザーデータを調べる
 			list($picfile,) = explode(",",(string)filter_input_data('POST', 'picfile'));
 			$picfile_name=basename($picfile);

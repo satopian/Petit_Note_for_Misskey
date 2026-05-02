@@ -150,62 +150,6 @@ function paint(): void {
 
 	$adminpost=adminpost_valid();
 
-	//pchファイルアップロードペイント
-	if($adminpost){
-
-		$pchfilename = isset($_FILES['pchup']['name']) ? basename($_FILES['pchup']['name']) : '';
-		
-		$pchtmp= $_FILES['pchup']['tmp_name'] ?? '';
-
-		if(isset($_FILES['pchup']['error']) && in_array($_FILES['pchup']['error'],[1,2])){//容量オーバー
-			error($en? 'The file size is too big.':'ファイルサイズが大きすぎます。');
-		} 
-
-		if ($pchtmp && $_FILES['pchup']['error'] === UPLOAD_ERR_OK){
-	
-			$time = (string)(time().substr(microtime(),2,6));
-			$pchext=pathinfo($pchfilename, PATHINFO_EXTENSION);
-			$pchext=strtolower($pchext);//すべて小文字に
-			//拡張子チェック
-			if (!in_array($pchext, ['pch','chi','psd'])) {
-				error($en?'This file does not supported by the ability to load uploaded files onto the canvas.Supported formats are pch and chi.':'アップロードペイントで使用できるファイルはpch、chi、psdです。');
-			}
-			$pchup = TEMP_DIR.'pchup-'.$time.'-tmp.'.$pchext;//アップロードされるファイル名
-
-			$move_uploaded = move_uploaded_file($pchtmp, $pchup);
-			if(!$move_uploaded){//アップロードは成功した?
-				safe_unlink($pchtmp);
-				error($en?'This operation has failed.':'失敗しました。');
-			
-			}
-			$basename_pchup=basename($pchup);
-			$pchup=TEMP_DIR.$basename_pchup;//ファイルを開くディレクトリを固定
-			$mime_type = mime_content_type($pchup);
-			if(($pchext==="pch") && ($mime_type === "application/octet-stream") && is_neo($pchup)){
-					$app='neo';
-						if($get_pch_size = get_pch_size($pchup)){
-							list($picw,$pich)=$get_pch_size;//pchの幅と高さを取得
-						}
-					$pchfile = $pchup;
-				} elseif(($pchext==="chi") && ($mime_type === "application/octet-stream")){
-					$app='chi';
-					$img_chi = $pchup;
-				} elseif(($pchext==="psd") && ($mime_type === "image/vnd.adobe.photoshop")){
-					$app='klecks';
-				$img_klecks = $pchup;
-				} elseif(in_array($pchext, ['gif','jpg','jpeg','png','webp']) && in_array($mime_type, ['image/gif', 'image/jpeg', 'image/png','image/webp'])){
-					$file_name=pathinfo($pchup,PATHINFO_FILENAME);
-					$max_px= $max_px ?? 1024;
-					thumb(TEMP_DIR,$basename_pchup,$time,$max_px,$max_px,['toolarge'=>1]);
-					list($picw,$pich) = getimagesize($pchup);
-					$imgfile = $pchup;
-					$anime = false;
-				}else{
-					safe_unlink($pchup);
-					error($en? 'This file is an unsupported format.':'対応していないファイル形式です。');
-			}
-		}
-	}
 	$repcode='';
 	$hide_animation=false;
 	if($mode==="contpaint"){
