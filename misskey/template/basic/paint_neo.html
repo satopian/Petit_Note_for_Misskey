@@ -38,6 +38,10 @@ vertical-align: middle;
 .pickr .pcr-button::after {
   transition: none;
 }
+/* 色相スライダの操作でリロードのジェスチャになるのを防止 */
+.pcr-app.visible{
+	touch-action: none;
+}
 /* grab */
 .pcr-app .pcr-selection .pcr-color-palette,
 .pcr-app .pcr-selection .pcr-color-chooser,
@@ -51,7 +55,6 @@ vertical-align: middle;
 .pcr-app .pcr-selection .pcr-color-opacity:active {
   cursor: default;
 }
-
 </style>
 <style>body{overscroll-behavior-x: none !important; }</style>
 <title><?=h($boardname)?></title> 
@@ -266,7 +269,7 @@ Neo.params ={
 <script>
 // Pickrの初期化
 const pickr = Pickr.create({
-    el: "#pickr-container", // 設定ファイルのIDを使用
+    el: "#pickr-container",
     theme: 'classic',
     components: {
         preview: true,
