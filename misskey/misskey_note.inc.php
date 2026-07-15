@@ -2,7 +2,7 @@
 //Petit Note 2021-2024 (c)satopian MIT LICENCE
 //https://paintbbs.sakura.ne.jp/
 //APIを使ってお絵かき掲示板からMisskeyにノート
-$misskey_note_ver=20250318;
+$misskey_note_ver=20260714;
 class misskey_note{
 
 	//Misskeyに投稿するSESSIONデータを作成
@@ -33,7 +33,7 @@ class misskey_note{
 		$painttime='';
 		$picfile_name='';
 		if($pictmp===2){//ユーザーデータを調べる
-			list($picfile,) = explode(",",(string)filter_input_data('POST', 'picfile'));
+			[$picfile,] = explode(",",(string)filter_input_data('POST', 'picfile'));
 			$picfile_name=basename($picfile);
 			$tempfile = TEMP_DIR.$picfile;
 			$picfile=basename($picfile);
@@ -46,7 +46,7 @@ class misskey_note{
 			$fp = fopen(TEMP_DIR.$picfile.".dat", "r");
 			$userdata = fread($fp, 1024);
 			fclose($fp);
-			list($uip,$uhost,,,$ucode,,$starttime,$postedtime,$uresto,$tool,$u_hide_animation) = explode("\t", rtrim($userdata)."\t\t\t");
+			[$uip,$uhost,,,$ucode,,$starttime,$postedtime,$uresto,$tool,$u_hide_animation] = explode("\t", rtrim($userdata)."\t\t\t");
 			if((!$ucode || ($ucode != $usercode)) && (!$uip || ($uip != $userip))){error($en? 'Posting failed.':'投稿に失敗しました。');}
 			$tool= is_paint_tool_name($tool);
 			//描画時間を$userdataをもとに計算

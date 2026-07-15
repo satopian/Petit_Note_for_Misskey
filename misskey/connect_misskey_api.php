@@ -73,7 +73,7 @@ class connect_misskey_api{
 				error($en ? "Authentication failed." :"認証に失敗しました。" ,false);
 			}
 
-			list($com,$picfile,$tool,$painttime,$hide_thumbnail,$cw,$show_tag) = $_SESSION['sns_api_val'];
+			[$com,$picfile,$tool,$painttime,$hide_thumbnail,$cw,$show_tag] = $_SESSION['sns_api_val'];
 			$picfile=basename($picfile);
 			// 画像のアップロード
 			$imagePath = __DIR__.'/temp/'.$picfile;

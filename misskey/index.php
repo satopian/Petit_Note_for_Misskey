@@ -2,7 +2,7 @@
 //Petit Note (c)さとぴあ @satopian 2021-2026
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20260705';
+$petit_lot='lot.20260714';
 $lang = ($http_langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
@@ -16,12 +16,12 @@ if(!is_file(__DIR__.'/functions.php')){
 	die(__DIR__.'/functions.php'.($en ? ' does not exist.':'がありません。'));
 }
 require_once(__DIR__.'/functions.php');
-if(!isset($functions_ver)||$functions_ver<20250310){
+if(!isset($functions_ver)||$functions_ver<20260714){
 	die($en?'Please update functions.php to the latest version.':'functions.phpを最新版に更新してください。');
 }
 check_file(__DIR__.'/misskey_note.inc.php');
 require_once(__DIR__.'/misskey_note.inc.php');
-if(!isset($misskey_note_ver)||$misskey_note_ver<20250318){
+if(!isset($misskey_note_ver)||$misskey_note_ver<20260714){
 	die($en?'Please update misskey_note.inc.php to the latest version.':'misskey_note.inc.phpを最新版に更新してください。');
 }
 check_file(__DIR__.'/save.inc.php');
@@ -169,7 +169,7 @@ function paint(): void {
 		if(!is_file(IMG_DIR.$imgfile)){
 			error($en? 'The article does not exist.':'記事がありません。');
 		}
-		list($picw,$pich)=getimagesize(IMG_DIR.$imgfile);//キャンバスサイズ
+		[$picw,$pich]=getimagesize(IMG_DIR.$imgfile);//キャンバスサイズ
 
 		$_pch_ext = check_pch_ext(IMG_DIR.$time,['upload'=>true]);
 
@@ -276,7 +276,7 @@ function paint(): void {
 			foreach ( $lines as $i => $line ) {
 				$line=str_replace(["\r","\n","\t"],"",$line);
 				$line=$line;
-				list($pid,$pname,$pal[0],$pal[2],$pal[4],$pal[6],$pal[8],$pal[10],$pal[1],$pal[3],$pal[5],$pal[7],$pal[9],$pal[11],$pal[12],$pal[13]) = explode(",", $line);
+				[$pid,$pname,$pal[0],$pal[2],$pal[4],$pal[6],$pal[8],$pal[10],$pal[1],$pal[3],$pal[5],$pal[7],$pal[9],$pal[11],$pal[12],$pal[13]] = explode(",", $line);
 				$arr_dynp[]=h($pname);
 				$p_cnt=$i+1;
 				ksort($pal);
@@ -315,7 +315,7 @@ function paintcom(): void {
 			$fp = fopen(TEMP_DIR.$file, "r");
 			$userdata = fread($fp, 1024);
 			fclose($fp);
-			list($uip,$uhost,$uagent,$imgext,$ucode,,$starttime,$postedtime,$uresto,$tool,$u_hide_animation) = explode("\t", rtrim($userdata)."\t\t\t");
+			[$uip,$uhost,$uagent,$imgext,$ucode,,$starttime,$postedtime,$uresto,$tool,$u_hide_animation] = explode("\t", rtrim($userdata)."\t\t\t");
 			$hide_animation=($u_hide_animation==='true');
 			$imgext=basename($imgext);
 			$file_name = pathinfo($file, PATHINFO_FILENAME);
@@ -335,9 +335,9 @@ function paintcom(): void {
 		$pictmp = 2;
 		ksort($tmps);
 		foreach($tmps as $tmp){
-			list($tmpfile,$resto,$pchext)=$tmp;
+			[$tmpfile,$resto,$pchext]=$tmp;
 			$tmpfile=basename($tmpfile);
-			list($w,$h)=getimagesize(TEMP_DIR.$tmpfile);
+			[$w,$h]=getimagesize(TEMP_DIR.$tmpfile);
 			$tmp_img=[
 				'w'=>$w,
 				'h'=>$h,
