@@ -2,14 +2,14 @@
 //Petit Note (c)さとぴあ @satopian 2021-2026
 //1スレッド1ログファイル形式のスレッド式画像掲示板
 $petit_ver='for_misskey';
-$petit_lot='lot.20260714';
+$petit_lot='lot.20260723';
 $lang = ($http_langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
 
-if (version_compare(PHP_VERSION, '7.3.0', '<')) {
-	die($en? "Error. PHP version 7.3.0 or higher is required for this program to work. <br>\n(Current PHP version:".PHP_VERSION.")":
-		"エラー。本プログラムの動作には PHPバージョン 7.3.0 以上が必要です。<br>\n(現在のPHPバージョン：".PHP_VERSION.")"
+if (version_compare(PHP_VERSION, '7.4.0', '<')) {
+	die($en? "Error. PHP version 7.4.0 or higher is required for this program to work. <br>\n(Current PHP version:".PHP_VERSION.")":
+		"エラー。本プログラムの動作には PHPバージョン 7.4.0 以上が必要です。<br>\n(現在のPHPバージョン：".PHP_VERSION.")"
 	);
 }
 if(!is_file(__DIR__.'/functions.php')){
