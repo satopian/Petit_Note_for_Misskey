@@ -2,12 +2,14 @@
 //Petit Note 2021-2025 (c)satopian MIT LICENCE
 //https://paintbbs.sakura.ne.jp/
 
-require_once(__DIR__.'/functions.php');
 require_once(__DIR__.'/config.php');
+require_once(__DIR__.'/functions.php');
+require_once(__DIR__.'/misskey_note.inc.php');
 
 $lang = ($http_langs = $_SERVER['HTTP_ACCEPT_LANGUAGE'] ?? '')
   ? explode( ',', $http_langs )[0] : '';
 $en= (stripos($lang,'ja')!==0);
+//テンプレート
 $skindir='template/basic/';
 session_sta();
 
@@ -15,7 +17,8 @@ if((!isset($_SESSION['sns_api_session_id']))||(!isset($_SESSION['sns_api_val']))
 	redirect("./") ;
 };
 $baseUrl = $_SESSION['misskey_server_radio'] ?? "";
-if(!filter_var($baseUrl,FILTER_VALIDATE_URL)){
+$arrowd = misskey_note::is_arrowd_url($baseUrl);
+if(!$arrowd){
 	error($en ? "This is not a valid server URL.":"サーバのURLが無効です。" ,false);
 }
 
